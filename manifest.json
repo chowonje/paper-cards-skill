@@ -1,7 +1,7 @@
 {
   "created_at": "2026-06-29",
   "status": "review_candidate",
-  "release_decision": "WARN",
+  "release_decision": "PASS_AFTER_REVIEWED_WARNINGS",
   "source_skill_paths": [
     "<private-source>/paper-section-cards/",
     "<private-source>/codex-paper-card-generator/"
@@ -10,9 +10,14 @@
     "skill/SKILL.md",
     "skill/prompts/card_spec.md",
     "skill/prompts/generation_cautions.md",
+    "skill/scripts/prepare_paper.py",
     "skill/scripts/qa_check.py",
-    "skill/scripts/render_paper.sh"
+    "skill/scripts/release_hygiene.py",
+    "skill/scripts/render_paper.sh",
+    "skill/templates/agent_prompt.md",
+    "skill/templates/card_scaffold.md"
   ],
+  "reviewed_privacy_findings_file": "privacy-reviewed-findings.json",
   "exported_example_cards": [
     {
       "file": "examples/cards/attention-is-all-you-need-2017.md",
@@ -81,7 +86,7 @@
       "name": "export_file_inventory",
       "command": "find . -maxdepth 4 -type f -not -path './.git/*' | sort",
       "result": "PASS",
-      "summary": "19 files total; required skill files and 10 example cards present."
+      "summary": "24 files total; required skill files, release hygiene review data, and 10 example cards present."
     },
     {
       "name": "forbidden_binary_and_queue_classes",
@@ -105,7 +110,13 @@
       "name": "privacy_release_check",
       "command": "python3 privacy_preflight.py --scope paths --paths . --out /tmp/paper-cards-skill-privacy-preflight",
       "result": "WARN",
-      "summary": "Decision WARN; 19 files scanned; 0 block findings; 22 warn findings; OPF missing. Reviewed warning lines are paper identifiers, dates, equation/table values, and page-number examples matching broad heuristics. Local report was written outside the repository."
+      "summary": "Decision WARN; 24 files scanned; 0 block findings; OPF missing. Warning lines are paper identifiers, dates, equation/table values, and page-number examples matching broad heuristics. Local report was written outside the repository."
+    },
+    {
+      "name": "reviewed_privacy_warning_gate",
+      "command": "uv run skill/scripts/release_hygiene.py --report /tmp/paper-cards-skill-privacy-preflight/report.json",
+      "result": "PASS",
+      "summary": "22 privacy preflight findings matched reviewed line-hash entries in privacy-reviewed-findings.json; 0 unresolved warnings or blocks."
     },
     {
       "name": "manifest_json_validation",
@@ -118,7 +129,7 @@
     "Example cards are review samples and need human paper-by-paper publication review.",
     "Mechanical checks cannot prove copyright suitability or factual correctness.",
     "PDF-backed QA was not run because source PDFs are intentionally excluded.",
-    "OPF was unavailable, so model-based PII scanning was not run.",
-    "Some research terms and numeric paper content create false positives in broad sensitive-term scans."
+    "OPF was unavailable in the local environment, so model-based PII scanning was not run unless a reviewer installs OPF and reruns the gate.",
+    "Reviewed-warning PASS depends on exact line hashes; changed example-card lines must be reviewed again."
   ]
 }

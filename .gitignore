@@ -10,5 +10,6 @@ __pycache__/
 
 paper-pages/
 rendered-pages/
+paper-card-runs/
 privacy-preflight*/
 *-privacy-preflight*/

@@ -29,14 +29,40 @@ Many paper tools are optimized for quick understanding, chat, or library managem
 - `skill/SKILL.md`: standalone workflow for generating paper cards.
 - `skill/prompts/card_spec.md`: output contract for section cards.
 - `skill/prompts/generation_cautions.md`: known quality pitfalls and review cautions.
+- `skill/scripts/prepare_paper.py`: one-command PDF workspace preparation.
 - `skill/scripts/qa_check.py`: mechanical Markdown card QA.
+- `skill/scripts/release_hygiene.py`: reviewed privacy-warning classifier.
 - `skill/scripts/render_paper.sh`: PDF-to-page-image helper.
+- `privacy-reviewed-findings.json`: line-hash allowlist for reviewed privacy false positives.
 - `examples/cards/`: 10 copied example cards for review.
 - `manifest.json`: preview manifest, checks, exclusions, and residual risks.
 
 ## Basic Use
 
-Set your own paths before running the workflow:
+The easiest path is to prepare a local workspace from one PDF:
+
+```bash
+uv run skill/scripts/prepare_paper.py path/to/paper.pdf --out paper-card-runs
+```
+
+This creates:
+
+- rendered page images for visual reading;
+- extracted PDF text;
+- a draft Markdown card scaffold;
+- `agent_prompt.md`, a ready-to-send prompt for an agent that can complete the card.
+
+Then open the generated `agent_prompt.md` with your agent and let it fill the draft card. After the card is complete, run:
+
+```bash
+uv run skill/scripts/qa_check.py paper-card-runs/<paper-slug>/<paper-slug>.md --paper path/to/paper.pdf
+```
+
+The generated scaffold is not the final card. It is expected to contain `TODO` placeholders until an agent completes it.
+
+`paper-card-runs/` is a local working directory. It can contain extracted text and an `agent_prompt.md` with local execution paths, so do not publish the whole run directory. Publish only reviewed card Markdown files.
+
+Advanced users can set their own paths before running the workflow:
 
 ```bash
 export PAPER_PDF_DIR="/path/to/pdfs"
@@ -62,13 +88,14 @@ The example cards are included as review samples only. They are summaries and in
 
 ## Hygiene Summary
 
-Local hygiene and privacy checks were run before the initial GitHub publish. Current status is WARN, not BLOCK:
+Local hygiene and privacy checks were run for this preview repository. Raw `privacy_preflight.py` status is WARN, not BLOCK. The repo also includes a reviewed-warning pass that turns the current known false positives into PASS only when their line hashes still match.
 
-- 19 files in the repo, including 10 example cards.
+- 24 files in the repo, including 10 example cards.
 - No PDFs, page images, raw paper images, or queue state files were found.
 - Mechanical Markdown QA passed for all example cards; PDF-backed checks were skipped because PDFs are intentionally not included.
 - Literal hygiene scan found no local path or credential-label matches. It did find benign research-term matches in example card text; details are summarized in `manifest.json`.
 - Privacy preflight reported 0 BLOCK findings and WARN findings from missing OPF plus numeric paper identifiers, dates, benchmark values, and page examples that match broad heuristics.
+- `uv run skill/scripts/release_hygiene.py --report <privacy-report.json>` reported PASS for the current reviewed warnings: 22 total findings, 22 reviewed, 0 unresolved.
 
 ## License
 

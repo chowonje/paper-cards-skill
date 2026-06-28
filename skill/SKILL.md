@@ -28,6 +28,18 @@ Do not assume any fixed home directory, workspace name, queue location, or outpu
 
 ## Workflow
 
+### 0. Prepare a PDF Workspace
+
+For a one-command start, run:
+
+```bash
+uv run skill/scripts/prepare_paper.py "$PAPER_PDF_DIR/<paper>.pdf" --out paper-card-runs
+```
+
+This creates rendered pages, extracted text, a draft card scaffold, a run manifest, and an `agent_prompt.md` file that can be handed to an agent to complete the card.
+
+Treat the prepared workspace as local working state. It may contain extracted source text and local execution paths. Share only reviewed final card Markdown files, not the whole prepared workspace.
+
 ### 1. Read the Contracts
 
 Before each batch, read:

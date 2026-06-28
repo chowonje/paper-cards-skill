@@ -1,0 +1,158 @@
+{
+  "version": 1,
+  "scope": "paper-cards-skill public preview privacy preflight warnings",
+  "reviewed_findings": [
+    {
+      "kind": "opf_missing",
+      "file": ".",
+      "line": null,
+      "line_sha256": null,
+      "classification": "accepted_tooling_gap",
+      "reason": "OPF was unavailable in this local environment; deterministic checks still ran."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/adam-optimizer-2014.md",
+      "line": 5,
+      "line_sha256": "162a002b61b422b9a6f189e54cb8c695328773dedfe1f284ade89cc7fac50e72",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/bert-2018.md",
+      "line": 5,
+      "line_sha256": "5e1c287245df04c28123468511391f0b113f6872c1c846388e760181b7fcb7af",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/deepseek-r1-incentivizing-reasoning-rl-2025.md",
+      "line": 5,
+      "line_sha256": "900ac877f7463deb703871b712ef077a055a1a09cde03e515f50bd0d3bd1cc95",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/deepseek-r1-incentivizing-reasoning-rl-2025.md",
+      "line": 105,
+      "line_sha256": "c8c196454da7b16b064adcad01112710fff83da42d045e89e5f99ae1fa911685",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/deepseek-r1-incentivizing-reasoning-rl-2025.md",
+      "line": 134,
+      "line_sha256": "c97004f42ebc3389803cef576a77fd6ebcec976e7c83de93569cffb8c5267f1e",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/deepseek-r1-incentivizing-reasoning-rl-2025.md",
+      "line": 200,
+      "line_sha256": "bfc1b4e9070050816117f30637aaf44131edb2a85504ee3ad9765302f74ce7cc",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/deepseek-r1-incentivizing-reasoning-rl-2025.md",
+      "line": 201,
+      "line_sha256": "deeabade5913a75a5cf561e8d9ff577ae4eb80413515f83f5f24173ee8c91496",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/deepseek-r1-incentivizing-reasoning-rl-2025.md",
+      "line": 203,
+      "line_sha256": "feac6c16a790cfc010a802b10fcf988811dd6bdeab19270131c5a89aac45fbb5",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/deepseek-r1-incentivizing-reasoning-rl-2025.md",
+      "line": 208,
+      "line_sha256": "ed5b1fa8b861ec526ef3af40e49f110bcc5182580776750a264464158e820279",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/deepseek-r1-incentivizing-reasoning-rl-2025.md",
+      "line": 216,
+      "line_sha256": "5df8dfff21b3d7e990082417ebcb5d7a6196c12fe72db9a500e9650943ad9e3f",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/gpt-4-technical-report-2023.md",
+      "line": 5,
+      "line_sha256": "9fefcc6c2d6be4b3c78ca65b34584411e04413a7fadb386249a139bdd4b32897",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/rag-knowledge-intensive-nlp-2020.md",
+      "line": 5,
+      "line_sha256": "7fdb4263d5a161ed1abc5c3b45d4f98d91fde6eea6b71579796155a1ff26187f",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/random-forests-2001.md",
+      "line": 5,
+      "line_sha256": "4329d50a2e68e0677f2e02c89e24ac277c327654f45c9ecfe4896d2e75a7103b",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/random-forests-2001.md",
+      "line": 333,
+      "line_sha256": "0c10245c3010c2ed19686471f40ffb4ab84f8589c77dacd6d754f01b34eeb924",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/random-forests-2001.md",
+      "line": 344,
+      "line_sha256": "4e085e9f7fc2c24c4ef7f735a8ba8425bc67b67d70216155bb911587e70be9ec",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "examples/cards/self-instruct-2022.md",
+      "line": 5,
+      "line_sha256": "1ae16acf7e6e87d3d4add45836f27fab80a75339be2a4726fdc55aa8245be9fe",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "manifest.json",
+      "line": 2,
+      "line_sha256": "4ecfec91a82b2f81d46f30fcfb56bc733e97d40dc5f354936470f26e2ea252ee",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    },
+    {
+      "kind": "phone",
+      "file": "skill/prompts/card_spec.md",
+      "line": 49,
+      "line_sha256": "53ed27a5ce6b8e2e10117b2b1cb238ecd79d8e1f4f382e92e625b79d1dfeb2fe",
+      "classification": "reviewed_research_number_false_positive",
+      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+    }
+  ]
+}
