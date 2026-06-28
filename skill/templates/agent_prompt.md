@@ -1,9 +1,9 @@
 Use this repository's paper-cards skill to finish a Korean paper card.
 
 Read these files first:
-- skill/SKILL.md
-- skill/prompts/card_spec.md
-- skill/prompts/generation_cautions.md
+- {{skill_path}}
+- {{card_spec_path}}
+- {{generation_cautions_path}}
 
 Input PDF:
 {{pdf_path}}

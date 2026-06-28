@@ -1,0 +1,43 @@
+{
+  "name": "paper-cards-skill",
+  "version": "0.1.0-preview.0",
+  "description": "Local PDF to reusable Korean Markdown research cards.",
+  "bin": {
+    "paper-cards-skill": "bin/paper-cards-skill.js"
+  },
+  "files": [
+    "README.md",
+    "NOTICE.md",
+    "manifest.json",
+    "privacy-reviewed-findings.json",
+    "bin/paper-cards-skill.js",
+    "skill/SKILL.md",
+    "skill/prompts/card_spec.md",
+    "skill/prompts/generation_cautions.md",
+    "skill/scripts/prepare_paper.py",
+    "skill/scripts/qa_check.py",
+    "skill/scripts/release_hygiene.py",
+    "skill/scripts/render_paper.sh",
+    "skill/templates/agent_prompt.md",
+    "skill/templates/card_scaffold.md",
+    "examples/cards/*.md"
+  ],
+  "scripts": {
+    "smoke": "node bin/paper-cards-skill.js --help && npm pack --dry-run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chowonje/paper-cards-skill.git"
+  },
+  "keywords": [
+    "codex",
+    "paper",
+    "research",
+    "markdown",
+    "pdf"
+  ],
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  }
+}

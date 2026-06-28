@@ -26,6 +26,8 @@ Many paper tools are optimized for quick understanding, chat, or library managem
 
 ## Contents
 
+- `package.json`: npm/npx package metadata.
+- `bin/paper-cards-skill.js`: small Node CLI for GitHub `npx` and npm installs.
 - `skill/SKILL.md`: standalone workflow for generating paper cards.
 - `skill/prompts/card_spec.md`: output contract for section cards.
 - `skill/prompts/generation_cautions.md`: known quality pitfalls and review cautions.
@@ -38,6 +40,26 @@ Many paper tools are optimized for quick understanding, chat, or library managem
 - `manifest.json`: preview manifest, checks, exclusions, and residual risks.
 
 ## Basic Use
+
+Run directly from GitHub with `npx`:
+
+```bash
+npx github:chowonje/paper-cards-skill --help
+npx github:chowonje/paper-cards-skill init --target ./paper-cards-skill
+npx github:chowonje/paper-cards-skill prepare path/to/paper.pdf --out paper-card-runs
+```
+
+After an npm registry publish, the same CLI can be installed or run as:
+
+```bash
+npx paper-cards-skill prepare path/to/paper.pdf --out paper-card-runs
+npm install -g paper-cards-skill
+paper-cards-skill init --target ./paper-cards-skill
+```
+
+The CLI requires Node.js 18 or newer. The `prepare` and `qa` commands also require `uv` and local PDF tools such as `pdfinfo`, `pdftoppm`, and `pdftotext`.
+
+`pipx` is not the primary install path for this preview because the repository is a portable skill bundle rather than a Python library package. A PyPI/pipx wrapper can be added later if the Python scripts become the main product surface.
 
 The easiest path is to prepare a local workspace from one PDF:
 
@@ -90,7 +112,7 @@ The example cards are included as review samples only. They are summaries and in
 
 Local hygiene and privacy checks were run for this preview repository. Raw `privacy_preflight.py` status is WARN, not BLOCK. The repo also includes a reviewed-warning pass that turns the current known false positives into PASS only when their line hashes still match.
 
-- 24 files in the repo, including 10 example cards.
+- 26 files in the repo, including npm package metadata, a Node CLI, and 10 example cards.
 - No PDFs, page images, raw paper images, or queue state files were found.
 - Mechanical Markdown QA passed for all example cards; PDF-backed checks were skipped because PDFs are intentionally not included.
 - Literal hygiene scan found no local path or credential-label matches. It did find benign research-term matches in example card text; details are summarized in `manifest.json`.

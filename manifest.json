@@ -7,6 +7,8 @@
     "<private-source>/codex-paper-card-generator/"
   ],
   "exported_skill_files": [
+    "package.json",
+    "bin/paper-cards-skill.js",
     "skill/SKILL.md",
     "skill/prompts/card_spec.md",
     "skill/prompts/generation_cautions.md",
@@ -86,7 +88,7 @@
       "name": "export_file_inventory",
       "command": "find . -maxdepth 4 -type f -not -path './.git/*' | sort",
       "result": "PASS",
-      "summary": "24 files total; required skill files, release hygiene review data, and 10 example cards present."
+      "summary": "26 files total; required skill files, npm/npx package entrypoint, release hygiene review data, and 10 example cards present."
     },
     {
       "name": "forbidden_binary_and_queue_classes",

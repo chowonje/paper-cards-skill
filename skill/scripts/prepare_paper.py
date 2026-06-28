@@ -230,6 +230,9 @@ def agent_prompt(args: CliArgs, paths: PreparedPaths, metadata: PaperMetadata, r
         "agent_prompt.md",
         {
             "pdf_path": str(args.pdf_path),
+            "skill_path": str(SKILL_DIR / "SKILL.md"),
+            "card_spec_path": str(SKILL_DIR / "prompts" / "card_spec.md"),
+            "generation_cautions_path": str(SKILL_DIR / "prompts" / "generation_cautions.md"),
             "run_dir": str(paths.run_dir),
             "paper_text_path": str(paths.text_dir / "paper.txt"),
             "first_page_text_path": str(paths.text_dir / "page-1.txt"),
