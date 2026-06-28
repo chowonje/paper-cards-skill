@@ -1,0 +1,124 @@
+{
+  "created_at": "2026-06-29",
+  "status": "review_candidate",
+  "release_decision": "WARN",
+  "source_skill_paths": [
+    "<private-source>/paper-section-cards/",
+    "<private-source>/codex-paper-card-generator/"
+  ],
+  "exported_skill_files": [
+    "skill/SKILL.md",
+    "skill/prompts/card_spec.md",
+    "skill/prompts/generation_cautions.md",
+    "skill/scripts/qa_check.py",
+    "skill/scripts/render_paper.sh"
+  ],
+  "exported_example_cards": [
+    {
+      "file": "examples/cards/attention-is-all-you-need-2017.md",
+      "source_selection": "requested candidate present",
+      "status": "included"
+    },
+    {
+      "file": "examples/cards/imagenet-classification-deep-cnn-alexnet-2012.md",
+      "source_selection": "requested candidate present",
+      "status": "included"
+    },
+    {
+      "file": "examples/cards/adam-optimizer-2014.md",
+      "source_selection": "requested candidate present",
+      "status": "included"
+    },
+    {
+      "file": "examples/cards/rag-knowledge-intensive-nlp-2020.md",
+      "source_selection": "requested candidate present",
+      "status": "included"
+    },
+    {
+      "file": "examples/cards/react-synergizing-reasoning-acting-2023.md",
+      "source_selection": "requested candidate present",
+      "status": "included"
+    },
+    {
+      "file": "examples/cards/deepseek-r1-incentivizing-reasoning-rl-2025.md",
+      "source_selection": "requested candidate present",
+      "status": "included"
+    },
+    {
+      "file": "examples/cards/bert-2018.md",
+      "source_selection": "requested candidate present",
+      "status": "included"
+    },
+    {
+      "file": "examples/cards/random-forests-2001.md",
+      "source_selection": "requested candidate present",
+      "status": "included"
+    },
+    {
+      "file": "examples/cards/self-instruct-2022.md",
+      "source_selection": "requested candidate present",
+      "status": "included"
+    },
+    {
+      "file": "examples/cards/gpt-4-technical-report-2023.md",
+      "source_selection": "requested candidate present",
+      "status": "included"
+    }
+  ],
+  "excluded_files_or_classes": [
+    "source PDFs",
+    "rendered page images",
+    "raw paper figure or table images",
+    "original queue state",
+    "workspace operation logs",
+    "task, review, and worklog ledgers",
+    "private note stores",
+    "broad workspace artifact trees",
+    "local absolute paths and user-specific home paths"
+  ],
+  "hygiene_checks": [
+    {
+      "name": "export_file_inventory",
+      "command": "find . -maxdepth 4 -type f -not -path './.git/*' | sort",
+      "result": "PASS",
+      "summary": "19 files total; required skill files and 10 example cards present."
+    },
+    {
+      "name": "forbidden_binary_and_queue_classes",
+      "command": "find . -type f ( pdf/png/jpg/jpeg/webp/queue-state names ) -not -path './.git/*' -print",
+      "result": "PASS",
+      "summary": "No PDFs, rendered page images, raw image files, or original queue state files found."
+    },
+    {
+      "name": "mechanical_card_qa_markdown_only",
+      "command": "for each examples/cards/*.md: uv run skill/scripts/qa_check.py <card>",
+      "result": "WARN",
+      "summary": "All 10 example cards passed Markdown structural checks. WARN is expected because source PDFs are intentionally absent, so PDF-backed page and figure/table inventory checks were skipped."
+    },
+    {
+      "name": "literal_hygiene_scan",
+      "command": "rg scans for local path markers, credential labels, and requested sensitive terms inside the export folder",
+      "result": "WARN",
+      "summary": "No local path or credential-label matches. Benign matches remain in research text: a retrieval-generation model variant name and one benchmark dataset name in example cards."
+    },
+    {
+      "name": "privacy_release_check",
+      "command": "python3 privacy_preflight.py --scope paths --paths . --out /tmp/paper-cards-skill-privacy-preflight",
+      "result": "WARN",
+      "summary": "Decision WARN; 19 files scanned; 0 block findings; 22 warn findings; OPF missing. Reviewed warning lines are paper identifiers, dates, equation/table values, and page-number examples matching broad heuristics. Local report was written outside the repository."
+    },
+    {
+      "name": "manifest_json_validation",
+      "command": "python3 -m json.tool manifest.json",
+      "result": "PASS",
+      "summary": "Manifest parses as JSON."
+    }
+  ],
+  "residual_risks": [
+    "Example cards are review samples and need human paper-by-paper publication review.",
+    "Mechanical checks cannot prove copyright suitability or factual correctness.",
+    "PDF-backed QA was not run because source PDFs are intentionally excluded.",
+    "OPF was unavailable, so model-based PII scanning was not run.",
+    "Some research terms and numeric paper content create false positives in broad sensitive-term scans."
+  ]
+}

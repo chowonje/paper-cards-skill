@@ -1,0 +1,14 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+paper-pages/
+rendered-pages/
+privacy-preflight*/
+*-privacy-preflight*/
