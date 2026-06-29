@@ -25,8 +25,9 @@ function usage() {
     "  where                           Print the installed package path",
     "",
     "Examples:",
-    "  npx github:chowonje/paper-cards-skill init --target ./paper-cards-skill",
-    "  npx github:chowonje/paper-cards-skill prepare ./paper.pdf --out paper-card-runs",
+    "  npx paper-cards-skill@preview --help",
+    "  npx paper-cards-skill@preview init --target ./paper-cards-skill",
+    "  npx paper-cards-skill@preview prepare ./paper.pdf --out paper-card-runs",
   ].join("\n");
 }
 

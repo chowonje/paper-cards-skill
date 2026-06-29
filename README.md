@@ -43,20 +43,21 @@ Many paper tools are optimized for quick understanding, chat, or library managem
 
 ## Basic Use
 
-Run directly from GitHub with `npx`:
+Run the npm preview explicitly:
+
+```bash
+npx paper-cards-skill@preview --help
+npx paper-cards-skill@preview init --target ./paper-cards-skill
+npx paper-cards-skill@preview prepare path/to/paper.pdf --out paper-card-runs
+```
+
+During the preview period, keep `@preview` in examples and documentation. The first npm publish may still have a `latest` tag because npm requires one dist-tag, but this project should be treated as a preview until a stable `0.1.0` release is published.
+
+GitHub `npx` remains available as a fallback:
 
 ```bash
 npx github:chowonje/paper-cards-skill --help
-npx github:chowonje/paper-cards-skill init --target ./paper-cards-skill
 npx github:chowonje/paper-cards-skill prepare path/to/paper.pdf --out paper-card-runs
-```
-
-After an npm registry publish, the same CLI can be installed or run as:
-
-```bash
-npx paper-cards-skill prepare path/to/paper.pdf --out paper-card-runs
-npm install -g paper-cards-skill
-paper-cards-skill init --target ./paper-cards-skill
 ```
 
 The CLI requires Node.js 18 or newer. The `prepare` and `qa` commands also require `uv` and local PDF tools such as `pdfinfo`, `pdftoppm`, and `pdftotext`.

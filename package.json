@@ -1,6 +1,6 @@
 {
   "name": "paper-cards-skill",
-  "version": "0.1.0-preview.0",
+  "version": "0.1.0-preview.1",
   "description": "Local PDF to Korean paper cards with evidence appendices.",
   "bin": {
     "paper-cards-skill": "bin/paper-cards-skill.js"
