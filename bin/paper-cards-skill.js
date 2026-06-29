@@ -19,6 +19,7 @@ function usage() {
     "paper-cards-skill <command> [options]",
     "",
     "Commands:",
+    "  doctor                          Check required local tools",
     "  init [--target DIR] [--force]    Copy the skill bundle into DIR",
     "  prepare <paper.pdf> [options]    Run skill/scripts/prepare_paper.py",
     "  qa <card.md> [--paper PDF]       Run skill/scripts/qa_check.py",
@@ -26,9 +27,79 @@ function usage() {
     "",
     "Examples:",
     "  npx paper-cards-skill@preview --help",
+    "  npx paper-cards-skill@preview doctor",
     "  npx paper-cards-skill@preview init --target ./paper-cards-skill",
     "  npx paper-cards-skill@preview prepare ./paper.pdf --out paper-card-runs",
   ].join("\n");
+}
+
+function commandVersion(command, args) {
+  const result = spawnSync(command, args, { encoding: "utf8" });
+  if (result.error) {
+    return {
+      ok: false,
+      detail: result.error.code === "ENOENT" ? "not found" : result.error.message,
+    };
+  }
+  const output =
+    `${result.stdout || ""}${result.stderr || ""}`.trim().split(/\r?\n/)[0] || `exit ${result.status}`;
+  return { ok: result.status === 0, detail: output };
+}
+
+function nodeVersionOk() {
+  const major = Number(process.versions.node.split(".")[0]);
+  return Number.isInteger(major) && major >= 18;
+}
+
+function runDoctor() {
+  const checks = [
+    {
+      name: "node",
+      ok: nodeVersionOk(),
+      detail: process.version,
+      hint: "Install Node.js 18 or newer.",
+    },
+    {
+      name: "uv",
+      ...commandVersion("uv", ["--version"]),
+      hint: "Install uv from https://docs.astral.sh/uv/.",
+    },
+    {
+      name: "pdfinfo",
+      ...commandVersion("pdfinfo", ["-v"]),
+      hint: "Install Poppler. On macOS: brew install poppler.",
+    },
+    {
+      name: "pdftoppm",
+      ...commandVersion("pdftoppm", ["-v"]),
+      hint: "Install Poppler. On macOS: brew install poppler.",
+    },
+    {
+      name: "pdftotext",
+      ...commandVersion("pdftotext", ["-v"]),
+      hint: "Install Poppler. On macOS: brew install poppler.",
+    },
+  ];
+
+  let missing = 0;
+  for (const check of checks) {
+    const label = check.ok ? "PASS" : "FAIL";
+    console.log(`${label} ${check.name}: ${check.detail}`);
+    if (!check.ok) {
+      missing += 1;
+      console.log(`     ${check.hint}`);
+    }
+  }
+
+  if (missing > 0) {
+    console.log("");
+    console.log(`doctor failed: ${missing} required tool(s) need attention`);
+    return 1;
+  }
+
+  console.log("");
+  console.log("doctor passed: required local tools are available");
+  return 0;
 }
 
 function parseInitArgs(args) {
@@ -99,6 +170,9 @@ function main(argv) {
   if (command === "where") {
     console.log(packageRoot);
     return 0;
+  }
+  if (command === "doctor") {
+    return runDoctor();
   }
   if (command === "init") {
     const options = parseInitArgs(args);

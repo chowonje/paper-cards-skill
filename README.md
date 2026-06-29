@@ -98,6 +98,7 @@ Run the npm preview explicitly:
 
 ```bash
 npx paper-cards-skill@preview --help
+npx paper-cards-skill@preview doctor
 npx paper-cards-skill@preview prepare path/to/paper.pdf --out paper-card-runs
 ```
 
@@ -146,6 +147,21 @@ uv run skill/scripts/qa_check.py paper-card-runs/<paper-slug>/cards/<paper-slug>
 ```
 
 `pipx` is not the primary install path for this preview because the repository is a portable skill bundle rather than a Python library package. A PyPI/pipx wrapper can be added later if the Python scripts become the main product surface.
+
+## Smoke Test
+
+The preview package was tested end-to-end with a public arXiv PDF:
+
+```text
+npx install -> doctor -> prepare -> rendered pages -> filled card -> qa
+```
+
+Observed result:
+
+- `doctor` found the required local tools.
+- `prepare` rendered 14 PDF pages and wrote extracted text, a card scaffold, a run manifest, and `agent_prompt.md`.
+- The completed card passed mechanical QA: `PASS no mechanical findings`.
+- Known caveat: the PDF metadata title was parsed as `Subject:`, so the final card corrected identity from the rendered first page.
 
 ## Preview Cautions
 
