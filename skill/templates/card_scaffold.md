@@ -107,3 +107,6 @@ TODO
 - 긴 원문 인용 제거 여부: TODO
 - 수식 LaTeX 보존 여부: TODO
 - 본문과 Evidence Appendix 균형 확인: TODO
+- 제목/저자/핵심 수치 visual spot-check 여부: TODO
+- 성능 주장 범위와 그림 축/단위 확인 여부: TODO
+- 수동 리뷰 상태: review candidate / WARN / PASS 중 하나로 기록

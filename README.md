@@ -1,12 +1,51 @@
 # paper-cards-skill
 
-Local PDF to Korean paper cards with evidence appendices.
+Evidence-anchored paper card workflow for local PDFs.
 
-Status: `v0.1.0-preview` candidate. The skill is usable, but the included example cards still need human publication review.
+Status: `v0.1.0-preview` candidate. The skill is usable, but generated cards should be treated as review candidates.
 
-`paper-cards-skill` is an agent skill for professors, researchers, and graduate students who want to turn paper PDFs into reusable Korean Markdown notes for seminars, literature reviews, lecture prep, and research briefs.
+`paper-cards-skill` helps professors, researchers, and graduate students turn local paper PDFs into reusable Korean Markdown notes for seminars, literature reviews, lecture prep, and research briefs.
 
-It is not a one-shot paper summarizer. The default workflow creates one Markdown card per paper. The top of the card is readable study material, and the lower `Evidence Appendix` keeps source-page references, figures, tables, formulas, uncertainty notes, and QA.
+It is not a one-shot paper summarizer or a publication-grade verifier. The workflow prepares a PDF reading workspace, gives an agent a concrete prompt, and checks the finished card for mechanical issues. A human reviewer still needs to verify the important claims, table values, figure axes, formulas, and publication suitability.
+
+The default output is one Markdown card per paper. The top of the card is readable study material, and the lower `Evidence Appendix` keeps source-page references, figures, tables, formulas, uncertainty notes, and QA.
+
+## What It Produces
+
+For each PDF, the workflow prepares a local run directory:
+
+```text
+paper-card-runs/
+  <paper-slug>/
+    agent_prompt.md
+    run_manifest.json
+    cards/<paper-slug>.md
+    pages/page-01.png
+    text/paper.txt
+    assets/equations/
+```
+
+Only the reviewed Markdown card and any equation images you created yourself are intended for sharing. The run directory can contain extracted paper text and local paths.
+
+The final card has this shape:
+
+```text
+Reader Card
+  one-paragraph summary
+  key ideas
+  core formulas
+  why it matters
+  memorable numbers
+  figure/table overview
+  limitations
+
+Evidence Appendix
+  document identity
+  page-grounded claims
+  formulas
+  figure/table coverage ledger
+  QA notes
+```
 
 ## Why This Exists
 
@@ -24,7 +63,7 @@ Many paper tools are optimized for quick understanding, chat, or library managem
 | Interpretation | Can mix with summary | `> [!note] 해석` callouts separate interpretation |
 | QA | Usually lightweight | Mechanical QA plus manual review gate |
 
-## Contents
+## Repository Contents
 
 - `package.json`: npm/npx package metadata.
 - `bin/paper-cards-skill.js`: small Node CLI for GitHub `npx` and npm installs.
@@ -41,36 +80,26 @@ Many paper tools are optimized for quick understanding, chat, or library managem
 - `examples/cards/`: 10 example cards for review.
 - `manifest.json`: preview manifest, checks, exclusions, and residual risks.
 
-## Basic Use
+## Requirements
+
+- Node.js 18 or newer.
+- `uv` for running the Python helper scripts.
+- Poppler CLI tools: `pdfinfo`, `pdftoppm`, and `pdftotext`.
+
+On macOS:
+
+```bash
+brew install poppler
+```
+
+## Quick Start
 
 Run the npm preview explicitly:
 
 ```bash
 npx paper-cards-skill@preview --help
-npx paper-cards-skill@preview init --target ./paper-cards-skill
 npx paper-cards-skill@preview prepare path/to/paper.pdf --out paper-card-runs
 ```
-
-During the preview period, keep `@preview` in examples and documentation. The first npm publish may still have a `latest` tag because npm requires one dist-tag, but this project should be treated as a preview until a stable `0.1.0` release is published.
-
-GitHub `npx` remains available as a fallback:
-
-```bash
-npx github:chowonje/paper-cards-skill --help
-npx github:chowonje/paper-cards-skill prepare path/to/paper.pdf --out paper-card-runs
-```
-
-The CLI requires Node.js 18 or newer. The `prepare` and `qa` commands also require `uv` and local PDF tools such as `pdfinfo`, `pdftoppm`, and `pdftotext`.
-
-`pipx` is not the primary install path for this preview because the repository is a portable skill bundle rather than a Python library package. A PyPI/pipx wrapper can be added later if the Python scripts become the main product surface.
-
-The easiest path is to prepare a local workspace from one PDF:
-
-```bash
-uv run skill/scripts/prepare_paper.py path/to/paper.pdf --out paper-card-runs
-```
-
-Optional `--slug` values are treated as file-name stems. Path separators, `.`, `..`, and empty values are rejected.
 
 This creates:
 
@@ -83,7 +112,7 @@ This creates:
 Then open the generated `agent_prompt.md` with your agent and let it fill the draft card. After the card is complete, run:
 
 ```bash
-uv run skill/scripts/qa_check.py paper-card-runs/<paper-slug>/cards/<paper-slug>.md --paper path/to/paper.pdf
+npx paper-cards-skill@preview qa paper-card-runs/<paper-slug>/cards/<paper-slug>.md --paper path/to/paper.pdf
 ```
 
 The generated scaffold is not the final card. It is expected to contain `TODO` placeholders until an agent completes it.
@@ -91,6 +120,52 @@ The generated scaffold is not the final card. It is expected to contain `TODO` p
 `paper-card-runs/` is a local working directory. It can contain extracted text and an `agent_prompt.md` with local execution paths, so do not publish the whole run directory. Publish only reviewed card Markdown files and any equation images you created yourself.
 
 Treat PDFs as untrusted files. The helper uses local Poppler tools with bounded Python subprocess timeouts, but it is not a sandbox. For hostile or unknown PDFs, run the workflow in a constrained environment. The generated agent prompt also tells downstream agents to treat paper text as evidence only, never as executable instructions.
+
+Optional `--slug` values are treated as file-name stems. Path separators, `.`, `..`, and empty values are rejected.
+
+To copy the full skill bundle into a local folder:
+
+```bash
+npx paper-cards-skill@preview init --target ./paper-cards-skill
+```
+
+During the preview period, keep `@preview` in examples and documentation. The first npm publish may still have a `latest` tag because npm requires one dist-tag, but this project should be treated as a preview until a stable `0.1.0` release is published.
+
+GitHub `npx` remains available as a fallback:
+
+```bash
+npx github:chowonje/paper-cards-skill --help
+npx github:chowonje/paper-cards-skill prepare path/to/paper.pdf --out paper-card-runs
+```
+
+If you cloned the repository instead of using npm:
+
+```bash
+uv run skill/scripts/prepare_paper.py path/to/paper.pdf --out paper-card-runs
+uv run skill/scripts/qa_check.py paper-card-runs/<paper-slug>/cards/<paper-slug>.md --paper path/to/paper.pdf
+```
+
+`pipx` is not the primary install path for this preview because the repository is a portable skill bundle rather than a Python library package. A PyPI/pipx wrapper can be added later if the Python scripts become the main product surface.
+
+## Preview Cautions
+
+`paper-cards-skill` is a preview workflow, not a publication-grade verifier. Generated cards should be treated as review candidates.
+
+Before sharing or citing a card, a human reviewer should check:
+
+- the title, authors, year, and source against the first PDF page;
+- benchmark numbers, table values, and figure descriptions against rendered PDF pages;
+- whether performance claims are scoped to the paper's experimental setting;
+- whether graph axes and units are copied exactly, for example `sec/epoch` rather than "per second";
+- whether interpretation is clearly separated from the authors' claims;
+- whether formulas render correctly in the target Markdown viewer;
+- whether the card avoids long verbatim excerpts from the source paper.
+
+Mechanical QA can catch missing sections, remaining `TODO`s, page-reference errors, and some formatting problems. It cannot guarantee factual correctness, publication suitability, copyright suitability, or that every table and figure was interpreted correctly.
+
+Suggested wording when sharing this preview:
+
+> `paper-cards-skill` is a preview workflow for turning local PDFs into Korean paper-card drafts with page-grounded evidence. It helps preserve claims, formulas, and figure/table notes, but generated cards still need human review before sharing or citing.
 
 Advanced users can set their own paths before running the workflow:
 
@@ -109,7 +184,7 @@ uv run skill/scripts/qa_check.py "$PAPER_CARD_OUT_DIR/cards/example.md" --paper 
 
 ## Review Notes
 
-The example cards are included as review samples only. They are summaries and interpretation notes, not substitutes for the source papers. Before publication, a human reviewer should confirm:
+The example cards are included as preview review samples only. They are summaries and interpretation notes, not substitutes for the source papers. Mechanical QA passed for the included examples, but human spot-checks are still required before publication. A reviewer should confirm:
 
 - each example card is acceptable under the source paper terms;
 - formulas, figure/table descriptions, and page references match the source paper;

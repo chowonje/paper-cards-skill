@@ -103,3 +103,5 @@ Use interpretation callouts mainly in `# Evidence Appendix`. Do not force a call
 - Do not paste long source excerpts.
 - Prefer paraphrase, compact tables, formulas, and page-grounded citations.
 - Mark uncertain OCR or visual readings as uncertain and re-render at higher DPI when possible.
+- Mark generated cards as review candidates until a human has spot-checked identity, key table values, figure axes/units, and performance-claim scope.
+- Mechanical QA is required, but it does not prove factual correctness, publication suitability, copyright suitability, or visual interpretation quality.
