@@ -220,4 +220,6 @@ Local hygiene and privacy checks were run for this preview repository. Raw `priv
 
 ## License
 
-No open-source license has been selected yet. Treat this preview repository as visible source, not as a grant of reuse rights, until a license is added.
+MIT License. See `LICENSE`.
+
+The source papers discussed by example cards retain their own copyright and license terms. Generated cards should still be reviewed for publication suitability before sharing or citing.

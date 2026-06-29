@@ -6,6 +6,7 @@
     "paper-cards-skill": "bin/paper-cards-skill.js"
   },
   "files": [
+    "LICENSE",
     "README.md",
     "NOTICE.md",
     "manifest.json",
@@ -36,7 +37,7 @@
     "markdown",
     "pdf"
   ],
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "node": ">=18"
   }
