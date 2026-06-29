@@ -1,14 +1,14 @@
 # paper-cards-skill
 
-Evidence-anchored paper card workflow for local PDFs.
+Learner-friendly and evidence-anchored paper card workflow for local PDFs.
 
 Status: `v0.1.0-preview` candidate. The skill is usable, but generated cards should be treated as review candidates.
 
-`paper-cards-skill` helps professors, researchers, and graduate students turn local paper PDFs into reusable Korean or English Markdown notes for seminars, literature reviews, lecture prep, and research briefs.
+`paper-cards-skill` helps readers turn local paper PDFs into reusable Korean or English Markdown notes. The default `study` mode is for learning a paper for the first time. The `full` and `evidence` modes keep the Evidence Appendix workflow for seminars, literature reviews, lecture prep, and research briefs that need page-grounded review.
 
 It is not a one-shot paper summarizer or a publication-grade verifier. The workflow prepares a PDF reading workspace, gives an agent a concrete prompt, and checks the finished card for mechanical issues. A human reviewer still needs to verify the important claims, table values, figure axes, formulas, and publication suitability.
 
-The default output is one Markdown card per paper. The top of the card is readable study material, and the lower `Evidence Appendix` keeps source-page references, figures, tables, formulas, uncertainty notes, and QA.
+The default output is one Markdown study card per paper. For research review, use `--mode full` or `--mode evidence` to generate the reader card plus `Evidence Appendix`.
 
 ## What It Produces
 
@@ -27,7 +27,21 @@ paper-card-runs/
 
 Only the reviewed Markdown card and any equation images you created yourself are intended for sharing. The run directory can contain extracted paper text and local paths.
 
-The final card has this shape:
+The default study card has this shape:
+
+```text
+Study Card
+  30-second summary
+  problem the paper tries to solve
+  three core ideas
+  figure-based explanation
+  formula to remember
+  concrete example
+  what the reader will know afterward
+  what to read next
+```
+
+The `full` and `evidence` modes keep the audit-oriented shape:
 
 ```text
 Reader Card
@@ -55,7 +69,7 @@ Many paper tools are optimized for quick understanding, chat, or library managem
 |---|---|---|
 | Main use | Fast overview | Reusable seminar, review, and research notes |
 | Input | Often service, URL, or library dependent | Local PDF first |
-| Output | Summary or chat response | One Korean or English Markdown card with an Evidence Appendix |
+| Output | Summary or chat response | One Korean or English Markdown card; study by default, Appendix-backed when requested |
 | Evidence | Citation/link oriented | Physical PDF page references per card |
 | Reading mode | Text extraction first | Rendered pages plus text layer |
 | Figures and tables | Optional or caption-level | Coverage ledger plus axes, trends, and values |
@@ -75,7 +89,10 @@ Many paper tools are optimized for quick understanding, chat, or library managem
 - `skill/scripts/release_hygiene.py`: reviewed privacy-warning classifier.
 - `skill/scripts/render_paper.sh`: PDF-to-page-image helper.
 - `skill/templates/agent_prompt.md`: ready-to-send completion prompt for prepared runs.
-- `skill/templates/card_scaffold.md`: one-file card scaffold with a readable top section and Evidence Appendix.
+- `skill/templates/card_scaffold.md`: full/evidence card scaffold with a readable top section and Evidence Appendix.
+- `skill/templates/card_scaffold_en.md`: English full/evidence card scaffold.
+- `skill/templates/card_scaffold_study.md`: Korean learner-facing study card scaffold.
+- `skill/templates/card_scaffold_study_en.md`: English learner-facing study card scaffold.
 - `privacy-reviewed-findings.json`: line-hash allowlist for reviewed privacy false positives.
 - `examples/cards/`: 10 example cards for review.
 - `manifest.json`: preview manifest, checks, exclusions, and residual risks.
@@ -99,10 +116,11 @@ Run the npm preview explicitly:
 ```bash
 npx paper-cards-skill@preview --help
 npx paper-cards-skill@preview doctor
-npx paper-cards-skill@preview prepare path/to/paper.pdf --out paper-card-runs
+npx paper-cards-skill@preview prepare path/to/paper.pdf --mode study --out paper-card-runs
+npx paper-cards-skill@preview prepare path/to/paper.pdf --mode full --out paper-card-runs
 ```
 
-Korean is the default output language. For an English card, add `--language en`:
+`study` is the default mode, so `--mode study` is optional. Korean is the default output language. For an English study card, add `--language en`:
 
 ```bash
 npx paper-cards-skill@preview prepare path/to/paper.pdf --out paper-card-runs --language en
@@ -123,6 +141,12 @@ npx paper-cards-skill@preview qa paper-card-runs/<paper-slug>/cards/<paper-slug>
 ```
 
 The generated scaffold is not the final card. It is expected to contain `TODO` placeholders until an agent completes it.
+
+Mode positioning:
+
+- `study`: readable learning card for people meeting the paper for the first time.
+- `full`: research-review card with Reader Card, Evidence Appendix, Figure/Table Coverage Ledger, and QA Notes.
+- `evidence`: same evidence/audit structure as `full`, useful when naming the output by its review purpose.
 
 `paper-card-runs/` is a local working directory. It can contain extracted text and an `agent_prompt.md` with local execution paths, so do not publish the whole run directory. Publish only reviewed card Markdown files and any equation images you created yourself.
 
@@ -149,6 +173,7 @@ If you cloned the repository instead of using npm:
 
 ```bash
 uv run skill/scripts/prepare_paper.py path/to/paper.pdf --out paper-card-runs
+uv run skill/scripts/prepare_paper.py path/to/paper.pdf --out paper-card-runs --mode full
 uv run skill/scripts/qa_check.py paper-card-runs/<paper-slug>/cards/<paper-slug>.md --paper path/to/paper.pdf
 ```
 
@@ -187,7 +212,15 @@ Mechanical QA can catch missing sections, remaining `TODO`s, page-reference erro
 
 Suggested wording when sharing this preview:
 
-> `paper-cards-skill` is a preview workflow for turning local PDFs into Korean or English paper-card drafts with page-grounded evidence. It helps preserve claims, formulas, and figure/table notes, but generated cards still need human review before sharing or citing.
+> `paper-cards-skill` is a preview workflow for turning local PDFs into Korean or English paper-card drafts. It produces study cards by default, and `full`/`evidence` modes preserve page-grounded claims, formulas, figure/table notes, and QA notes.
+>
+> It is not a one-shot summarizer or publication-grade verifier. Treat generated cards as review candidates: check paper identity, formulas, table values, figure axes, and copyright suitability before sharing or citing.
+
+Korean sharing note:
+
+> `paper-cards-skill`은 로컬 논문 PDF를 한국어/영어 Markdown 논문 카드 초안으로 바꾸는 preview 워크플로우입니다. 기본값은 처음 배우는 사람을 위한 study 카드이고, `full`/`evidence` 모드는 페이지 근거, 수식, 그림/표 메모, Evidence Appendix를 남기는 방식입니다.
+>
+> 생성된 카드는 공개/인용 전에 제목, 저자, 수치, 표·그림 해석, 저작권 적합성을 사람이 확인해야 합니다.
 
 Advanced users can set their own paths before running the workflow:
 
@@ -196,6 +229,7 @@ export PAPER_PDF_DIR="/path/to/pdfs"
 export PAPER_CARD_OUT_DIR="/path/to/cards"
 export PAPER_RUN_MANIFEST="/path/to/run_manifest.json"
 export PAPER_CARD_LANGUAGE="ko"
+export PAPER_CARD_MODE="study"
 ```
 
 Then read `skill/SKILL.md`, `skill/prompts/card_spec.md`, and `skill/prompts/generation_cautions.md` before generating a card.
@@ -218,7 +252,7 @@ The example cards are included as preview review samples only. They are summarie
 
 Local hygiene and privacy checks were run for this preview repository. Raw `privacy_preflight.py` status is WARN, not BLOCK. The repo also includes a reviewed-warning pass that turns the current known false positives into PASS only when their line hashes still match.
 
-- 26 files in the repo, including npm package metadata, a Node CLI, the one-card template, and 10 example cards.
+- The repo includes npm package metadata, a Node CLI, study and full/evidence templates, and 10 example cards.
 - No PDFs, page images, raw paper images, or queue state files were found.
 - Mechanical Markdown QA passed for all example cards; PDF-backed checks were skipped because PDFs are intentionally not included.
 - Literal hygiene scan found no local absolute path or credential-label matches. It did find benign matches in public package owner strings and research benchmark text; details are summarized in `manifest.json`.

@@ -18,7 +18,9 @@
     "skill/scripts/render_paper.sh",
     "skill/templates/agent_prompt.md",
     "skill/templates/card_scaffold.md",
-    "skill/templates/card_scaffold_en.md"
+    "skill/templates/card_scaffold_en.md",
+    "skill/templates/card_scaffold_study.md",
+    "skill/templates/card_scaffold_study_en.md"
   ],
   "reviewed_privacy_findings_file": "privacy-reviewed-findings.json",
   "exported_example_cards": [
@@ -89,7 +91,7 @@
       "name": "export_file_inventory",
       "command": "find . -maxdepth 4 -type f -not -path './.git/*' | sort",
       "result": "PASS",
-      "summary": "27 npm package files total; required skill files, Korean and English card templates, npm/npx package entrypoint, release hygiene review data, and 10 example cards present."
+      "summary": "npm package files include required skill files, Korean and English full/evidence templates, Korean and English study templates, npm/npx package entrypoint, release hygiene review data, and 10 example cards."
     },
     {
       "name": "forbidden_binary_and_queue_classes",

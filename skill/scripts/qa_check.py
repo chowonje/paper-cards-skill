@@ -44,7 +44,27 @@ ENGLISH_APPENDIX_HEADINGS: Final[tuple[str, ...]] = (
     "# Evidence Appendix",
 )
 SOURCE_PAGE_MARKERS: Final[tuple[str, ...]] = ("원문 페이지", "Source pages")
-CardKind = Literal["appendix", "legacy"]
+KOREAN_STUDY_HEADINGS: Final[tuple[str, ...]] = (
+    "## 30초 요약",
+    "## 이 논문이 풀려는 문제",
+    "## 핵심 아이디어 3개",
+    "## 그림으로 이해하기",
+    "## 꼭 기억할 수식",
+    "## 예시로 이해하기",
+    "## 이 논문을 읽고 나면 알게 되는 것",
+    "## 다음에 읽으면 좋은 것",
+)
+ENGLISH_STUDY_HEADINGS: Final[tuple[str, ...]] = (
+    "## 30-Second Summary",
+    "## Problem This Paper Tries To Solve",
+    "## Three Core Ideas",
+    "## Understand It With Figures",
+    "## Formula To Remember",
+    "## Understand It By Example",
+    "## What You Will Know After Reading",
+    "## What To Read Next",
+)
+CardKind = Literal["study", "appendix", "legacy"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -158,6 +178,14 @@ def check_sections(text: str) -> tuple[str, ...]:
     return tuple(failures)
 
 
+def closest_required_study_headings(text: str) -> tuple[str, ...]:
+    korean_missing = tuple(heading for heading in KOREAN_STUDY_HEADINGS if heading not in text)
+    english_missing = tuple(heading for heading in ENGLISH_STUDY_HEADINGS if heading not in text)
+    if len(english_missing) < len(korean_missing):
+        return ENGLISH_STUDY_HEADINGS
+    return KOREAN_STUDY_HEADINGS
+
+
 def closest_required_headings(text: str) -> tuple[str, ...]:
     korean_missing = tuple(heading for heading in KOREAN_APPENDIX_HEADINGS if heading not in text)
     english_missing = tuple(heading for heading in ENGLISH_APPENDIX_HEADINGS if heading not in text)
@@ -166,9 +194,27 @@ def closest_required_headings(text: str) -> tuple[str, ...]:
     return KOREAN_APPENDIX_HEADINGS
 
 
+def check_readability_warnings(text: str) -> tuple[str, ...]:
+    warnings: list[str] = []
+    if INLINE_MATH_PATTERN.search(text) is not None:
+        warnings.append("W3 card contains long inline LaTeX; prefer block math or equation image")
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        has_visual_term = re.search(r"(?:Figure|Fig\.|Table|그림|표)", line) is not None
+        if has_visual_term and len(line) > 280:
+            warnings.append(f"W4 long figure/table line in card: line {line_number}")
+    return tuple(warnings)
+
+
+def check_study_card(text: str) -> CheckResult:
+    hard: list[str] = []
+    for heading in closest_required_study_headings(text):
+        if heading not in text:
+            hard.append(f"H2 study-card section missing: {heading}")
+    return CheckResult(hard=tuple(hard), warn=check_readability_warnings(text))
+
+
 def check_appendix_card(text: str) -> CheckResult:
     hard: list[str] = []
-    warn: list[str] = []
     for heading in closest_required_headings(text):
         if heading not in text:
             hard.append(f"H2 appendix-card section missing: {heading}")
@@ -176,19 +222,45 @@ def check_appendix_card(text: str) -> CheckResult:
         hard.append("H4 Evidence Appendix missing source page references")
     if "Figure/Table Coverage Ledger" not in text:
         hard.append("H6 Evidence Appendix missing figure/table coverage ledger")
-    if INLINE_MATH_PATTERN.search(text) is not None:
-        warn.append("W3 card contains long inline LaTeX; prefer block math or equation image")
-    for line_number, line in enumerate(text.splitlines(), start=1):
-        has_visual_term = re.search(r"(?:Figure|Fig\.|Table|그림|표)", line) is not None
-        if has_visual_term and len(line) > 280:
-            warn.append(f"W4 long figure/table line in card: line {line_number}")
-    return CheckResult(hard=tuple(hard), warn=tuple(warn))
+    return CheckResult(hard=tuple(hard), warn=check_readability_warnings(text))
 
 
 def card_kind(text: str) -> CardKind:
     if "# Evidence Appendix" in text:
         return "appendix"
+    if any(heading in text for heading in KOREAN_STUDY_HEADINGS):
+        return "study"
+    if any(heading in text for heading in ENGLISH_STUDY_HEADINGS):
+        return "study"
     return "legacy"
+
+
+def check_card_text(text: str, paper_path: Path | None) -> CheckResult:
+    hard = [
+        *check_frontmatter(text),
+        *check_todos(text),
+    ]
+    warn: list[str] = []
+    require_inventory = True
+    kind = card_kind(text)
+    match kind:
+        case "appendix":
+            appendix_result = check_appendix_card(text)
+            hard.extend(appendix_result.hard)
+            warn.extend(appendix_result.warn)
+        case "study":
+            study_result = check_study_card(text)
+            hard.extend(study_result.hard)
+            warn.extend(study_result.warn)
+            require_inventory = False
+        case "legacy":
+            hard.extend(check_sections(text))
+        case unreachable:
+            assert_never(unreachable)
+    pdf_result = check_pdf_backed_rules(text, paper_path, require_inventory=require_inventory)
+    hard.extend(pdf_result.hard)
+    warn.extend(pdf_result.warn)
+    return CheckResult(hard=tuple(hard), warn=tuple(warn))
 
 
 def check_pdf_backed_rules(text: str, paper_path: Path | None, *, require_inventory: bool) -> CheckResult:
@@ -237,25 +309,7 @@ def check_card(card_path: Path, paper_path: Path | None) -> CheckResult:
     if not card_path.exists():
         return CheckResult(hard=(f"H0 card file missing: {card_path}",), warn=())
     text = card_path.read_text(encoding="utf-8")
-    hard = [
-        *check_frontmatter(text),
-        *check_todos(text),
-    ]
-    warn: list[str] = []
-    kind = card_kind(text)
-    match kind:
-        case "appendix":
-            appendix_result = check_appendix_card(text)
-            hard.extend(appendix_result.hard)
-            warn.extend(appendix_result.warn)
-        case "legacy":
-            hard.extend(check_sections(text))
-        case unreachable:
-            assert_never(unreachable)
-    pdf_result = check_pdf_backed_rules(text, paper_path, require_inventory=True)
-    hard.extend(pdf_result.hard)
-    warn.extend(pdf_result.warn)
-    return CheckResult(hard=tuple(hard), warn=tuple(warn))
+    return check_card_text(text, paper_path)
 
 
 def main() -> int:

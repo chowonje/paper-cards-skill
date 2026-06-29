@@ -30,17 +30,19 @@ DEFAULT_OUT_DIR: Final = Path("paper-card-runs")
 DEFAULT_DPI: Final = 110
 DEFAULT_MAX_PAGES: Final = 50
 LANGUAGE_ENV_VAR: Final = "PAPER_CARD_LANGUAGE"
+MODE_ENV_VAR: Final = "PAPER_CARD_MODE"
 PDF_TOOL_TIMEOUT_SECONDS: Final = 120
 SKILL_DIR: Final = Path(__file__).resolve().parents[1]
 USAGE: Final = (
     "usage: prepare_paper.py <paper.pdf> [--out DIR] [--dpi N] "
-    "[--max-pages N] [--slug NAME] [--language ko|en]"
+    "[--max-pages N] [--slug NAME] [--language ko|en] [--mode study|evidence|full]"
 )
 SLUG_PATTERN: Final = re.compile(r"[^a-z0-9]+")
 YEAR_PATTERN: Final = re.compile(r"\b(?:19|20)\d{2}\b")
 PAGES_PATTERN: Final = re.compile(r"Pages:\s+(\d+)")
 TITLE_PATTERN: Final = re.compile(r"Title:\s+(.+)")
 Language = Literal["ko", "en"]
+OutputMode = Literal["study", "evidence", "full"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,6 +53,7 @@ class CliArgs:
     max_pages: int
     slug: str | None
     language: Language
+    mode: OutputMode
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,11 +108,30 @@ def parse_language(raw: str) -> Language:
             raise UsageError(f"language must be ko or en: {unsupported}")
 
 
+def parse_mode(raw: str) -> OutputMode:
+    match raw.strip().lower():
+        case "study":
+            return "study"
+        case "evidence":
+            return "evidence"
+        case "full":
+            return "full"
+        case unsupported:
+            raise UsageError(f"mode must be study, evidence, or full: {unsupported}")
+
+
 def default_language() -> Language:
     raw = os.environ.get(LANGUAGE_ENV_VAR)
     if raw is None or not raw.strip():
         return "ko"
     return parse_language(raw)
+
+
+def default_mode() -> OutputMode:
+    raw = os.environ.get(MODE_ENV_VAR)
+    if raw is None or not raw.strip():
+        return "study"
+    return parse_mode(raw)
 
 
 def parse_args(argv: list[str]) -> CliArgs:
@@ -122,6 +144,7 @@ def parse_args(argv: list[str]) -> CliArgs:
     max_pages = DEFAULT_MAX_PAGES
     slug: str | None = None
     language: Language = default_language()
+    mode: OutputMode = default_mode()
     index = 2
 
     while index < len(argv):
@@ -140,6 +163,8 @@ def parse_args(argv: list[str]) -> CliArgs:
                 slug = normalize_user_slug(option_arg)
             case "--language":
                 language = parse_language(option_arg)
+            case "--mode":
+                mode = parse_mode(option_arg)
             case unexpected:
                 raise UsageError(f"unknown option: {unexpected}")
         index += 2
@@ -151,6 +176,7 @@ def parse_args(argv: list[str]) -> CliArgs:
         max_pages=max_pages,
         slug=slug,
         language=language,
+        mode=mode,
     )
 
 
@@ -266,12 +292,32 @@ def render_template(template_name: str, values: Mapping[str, str]) -> str:
     return text + "\n"
 
 
-def scaffold_template_name(language: Language) -> str:
+def full_scaffold_template_name(language: Language) -> str:
     match language:
         case "ko":
             return "card_scaffold.md"
         case "en":
             return "card_scaffold_en.md"
+        case unreachable:
+            assert_never(unreachable)
+
+
+def study_scaffold_template_name(language: Language) -> str:
+    match language:
+        case "ko":
+            return "card_scaffold_study.md"
+        case "en":
+            return "card_scaffold_study_en.md"
+        case unreachable:
+            assert_never(unreachable)
+
+
+def scaffold_template_name(language: Language, mode: OutputMode) -> str:
+    match mode:
+        case "study":
+            return study_scaffold_template_name(language)
+        case "evidence" | "full":
+            return full_scaffold_template_name(language)
         case unreachable:
             assert_never(unreachable)
 
@@ -290,13 +336,60 @@ def language_instruction(language: Language) -> str:
     match language:
         case "ko":
             return (
-                "Write the final card in Korean. Keep the Evidence Appendix headings "
+                "Write the final card in Korean. Keep the mode-required headings "
                 "in the Korean contract unless the template says otherwise."
             )
         case "en":
             return (
-                "Write the final card in English. Keep source-page evidence, formulas, "
-                "figure/table ledger, and QA notes in English."
+                "Write the final card in English. Keep mode-required headings and "
+                "review notes in English unless the paper's original terminology is clearer."
+            )
+        case unreachable:
+            assert_never(unreachable)
+
+
+def mode_instruction(mode: OutputMode) -> str:
+    match mode:
+        case "study":
+            return (
+                "Generate a learner-facing study card. Use the study-mode section contract, "
+                "keep the explanation readable for a first-time learner, and do not add an "
+                "Evidence Appendix unless the caller regenerates with --mode full or --mode evidence."
+            )
+        case "evidence":
+            return (
+                "Generate the evidence/audit card: readable reader sections plus Evidence Appendix, "
+                "Figure/Table Coverage Ledger, source-page evidence, formulas, and QA notes."
+            )
+        case "full":
+            return (
+                "Generate the full card: readable reader sections plus Evidence Appendix, "
+                "Figure/Table Coverage Ledger, source-page evidence, formulas, and QA notes."
+            )
+        case unreachable:
+            assert_never(unreachable)
+
+
+def mode_final_checks(mode: OutputMode, language: Language) -> str:
+    match mode:
+        case "study":
+            return "\n".join(
+                [
+                    "4. Keep the card learner-facing: short explanations, concrete examples, and no audit ledger.",
+                    "5. Use the study-mode headings from `card_spec.md` exactly.",
+                    "6. Explain figures and formulas only as much as needed for understanding.",
+                    "7. Run:",
+                ],
+            )
+        case "evidence" | "full":
+            return "\n".join(
+                [
+                    "4. Keep the top card readable: short paragraphs, compact bullets, and no long inline LaTeX inside prose.",
+                    "5. Put detailed figure/table coverage, table values, formula LaTeX, visual-reading uncertainty, and QA notes in `# Evidence Appendix`.",
+                    "6. For formulas that are hard to read inline, use block math in Markdown or create a small SVG under the equation assets directory and link it from the card.",
+                    f"7. {interpretation_callout_instruction(language)}",
+                    "8. Run:",
+                ],
             )
         case unreachable:
             assert_never(unreachable)
@@ -344,7 +437,9 @@ def agent_prompt(args: CliArgs, paths: PreparedPaths, metadata: PaperMetadata, r
             "language_code": args.language,
             "language_label": language_label(args.language),
             "language_instruction": language_instruction(args.language),
-            "interpretation_callout_instruction": interpretation_callout_instruction(args.language),
+            "mode_code": args.mode,
+            "mode_instruction": mode_instruction(args.mode),
+            "mode_final_checks": mode_final_checks(args.mode, args.language),
         },
     )
 
@@ -364,9 +459,10 @@ def write_manifest(args: CliArgs, paths: PreparedPaths, metadata: PaperMetadata,
         "year": metadata.year,
         "page_count": metadata.page_count,
         "output_language": args.language,
+        "output_mode": args.mode,
         "rendered_pages": rendered_pages,
         "status": "prepared",
-        "next_step": "Open agent_prompt.md with an agent that can read the PDF and complete the card.",
+        "next_step": f"Open agent_prompt.md with an agent that can read the PDF and complete the {args.mode} card.",
         "privacy_note": "This manifest avoids absolute source PDF paths. agent_prompt.md may contain local execution paths.",
     }
     paths.manifest_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -387,7 +483,10 @@ def prepare(args: CliArgs) -> PreparedPaths:
     rendered_pages = render_pages(args, paths, pdftoppm, metadata.page_count)
     extract_text(args.pdf_path, paths, pdftotext)
     values = scaffold_values(metadata, paths)
-    paths.card_path.write_text(render_template(scaffold_template_name(args.language), values), encoding="utf-8")
+    paths.card_path.write_text(
+        render_template(scaffold_template_name(args.language, args.mode), values),
+        encoding="utf-8",
+    )
     paths.prompt_path.write_text(agent_prompt(args, paths, metadata, rendered_pages), encoding="utf-8")
     write_manifest(args, paths, metadata, rendered_pages)
     return paths
@@ -405,6 +504,7 @@ def main() -> int:
     print(f"agent prompt: {paths.prompt_path}")
     print(f"manifest: {paths.manifest_path}")
     print(f"language: {args.language}")
+    print(f"mode: {args.mode}")
     return 0
 
 

@@ -8,6 +8,8 @@ tags: [paper-card]
 
 # {{title}}
 
+> Reader Card: 먼저 읽기 쉬운 요약과 핵심 구조를 쓴다. 자세한 검증 근거는 아래 `# Evidence Appendix`에 분리한다.
+
 ## 한 문단 요약
 
 TODO: 논문 전체를 처음 읽는 사람이 이해할 수 있게 한 문단으로 요약한다. 긴 원문 인용 없이 작성하고, 상세 근거는 아래 Evidence Appendix로 보낸다.
@@ -106,7 +108,7 @@ TODO
 - Figure/Table 누락 여부: TODO
 - 긴 원문 인용 제거 여부: TODO
 - 수식 LaTeX 보존 여부: TODO
-- 본문과 Evidence Appendix 균형 확인: TODO
+- Reader Card와 Evidence Appendix 균형 확인: TODO
 - 제목/저자/핵심 수치 visual spot-check 여부: TODO
 - 성능 주장 범위와 그림 축/단위 확인 여부: TODO
 - 수동 리뷰 상태: review candidate / WARN / PASS 중 하나로 기록

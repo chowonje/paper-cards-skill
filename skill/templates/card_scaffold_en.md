@@ -8,6 +8,8 @@ tags: [paper-card]
 
 # {{title}}
 
+> Reader Card: start with a readable summary and core structure. Keep detailed verification evidence in `# Evidence Appendix`.
+
 ## One-Paragraph Summary
 
 TODO: Summarize the whole paper in one readable paragraph for a first-time reader. Avoid long source quotations and move detailed evidence to the Evidence Appendix.

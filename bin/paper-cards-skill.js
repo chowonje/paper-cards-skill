@@ -29,8 +29,9 @@ function usage() {
     "  npx paper-cards-skill@preview --help",
     "  npx paper-cards-skill@preview doctor",
     "  npx paper-cards-skill@preview init --target ./paper-cards-skill",
-    "  npx paper-cards-skill@preview prepare ./paper.pdf --out paper-card-runs",
-    "  npx paper-cards-skill@preview prepare ./paper.pdf --out paper-card-runs --language en",
+    "  npx paper-cards-skill@preview prepare ./paper.pdf --mode study --out paper-card-runs",
+    "  npx paper-cards-skill@preview prepare ./paper.pdf --mode full --out paper-card-runs",
+    "  npx paper-cards-skill@preview prepare ./paper.pdf --mode study --out paper-card-runs --language en",
   ].join("\n");
 }
 

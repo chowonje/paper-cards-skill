@@ -1,18 +1,19 @@
 ---
 name: paper-cards
-description: Generate Korean or English paper cards from user-supplied local PDFs, with a readable top section, Evidence Appendix, document identity checks, page-grounded evidence, formula preservation, figure/table coverage, separated interpretation callouts, and a QA gate.
+description: Generate Korean or English paper cards from user-supplied local PDFs, with learner-facing study mode by default and full/evidence modes for page-grounded review appendices, formula preservation, figure/table coverage, separated interpretation callouts, and a QA gate.
 ---
 
 # Paper Cards
 
-This skill converts a local paper PDF into one Markdown card in the selected output language:
+This skill converts a local paper PDF into one Markdown card in the selected output language and output mode:
 
-- a readable top section for quick reading, study, seminars, and literature review;
-- an `Evidence Appendix` for page-grounded verification, figures, tables, formulas, uncertainty notes, and QA.
+- `study` mode, the default, produces a readable learning card for people meeting the paper for the first time;
+- `full` and `evidence` modes produce the review/audit card with Reader Card, `Evidence Appendix`, figure/table ledger, formulas, uncertainty notes, and QA.
 
 It is designed for reviewable research-note generation, not for canonical citation without human review.
 
 Default output language is Korean. Use English when the caller asks for English cards, international sharing, or English-first review.
+Default output mode is `study`. Use `full` or `evidence` when the caller needs the Appendix-backed research review card.
 
 ## Inputs
 
@@ -22,6 +23,7 @@ The caller supplies all paths:
 - `PAPER_CARD_OUT_DIR`: directory where Markdown cards will be written.
 - `PAPER_RUN_MANIFEST`: JSON or Markdown run record for selected papers, generated cards, QA status, and reviewer notes.
 - Optional `PAPER_CARD_LANGUAGE`: `ko` or `en`. Defaults to `ko`.
+- Optional `PAPER_CARD_MODE`: `study`, `full`, or `evidence`. Defaults to `study`.
 - Optional `PAPER_QUEUE_FILE`: a caller-owned queue file if batch processing is needed.
 
 Do not assume any fixed home directory, workspace name, queue location, or output path.
@@ -42,6 +44,18 @@ For a one-command start, run:
 
 ```bash
 uv run skill/scripts/prepare_paper.py "$PAPER_PDF_DIR/<paper>.pdf" --out paper-card-runs
+```
+
+Study mode is the default. You may spell it out:
+
+```bash
+uv run skill/scripts/prepare_paper.py "$PAPER_PDF_DIR/<paper>.pdf" --out paper-card-runs --mode study
+```
+
+For a full evidence-backed card:
+
+```bash
+uv run skill/scripts/prepare_paper.py "$PAPER_PDF_DIR/<paper>.pdf" --out paper-card-runs --mode full
 ```
 
 For an English card:
@@ -112,9 +126,15 @@ Use the language selected during preparation:
 - `ko`: Korean reader card and Korean appendix labels.
 - `en`: English reader card and English appendix labels.
 
+Use the mode selected during preparation:
+
+- `study`: learner-facing card with 30-second summary, problem, three ideas, figure explanation, formula, example, takeaways, and next reading.
+- `full` or `evidence`: readable reader sections plus Evidence Appendix, Figure/Table Coverage Ledger, source-page evidence, formulas, and QA notes.
+
 Readable top-section requirements:
 
 - frontmatter title, authors, year, source, tags;
+- a clear Reader Card marker for `full` and `evidence` cards;
 - one-paragraph summary;
 - compact key ideas;
 - why the paper matters;
@@ -122,7 +142,7 @@ Readable top-section requirements:
 - short figure/table reading notes;
 - no long inline LaTeX inside Korean prose.
 
-Evidence Appendix requirements:
+Evidence Appendix requirements for `full` and `evidence` modes:
 
 - document identity check;
 - page-grounded claims and evidence;
@@ -149,14 +169,17 @@ uv run skill/scripts/qa_check.py "$PAPER_CARD_OUT_DIR/cards/<paper>.md"
 
 Fix `FAIL` findings before treating a card as a candidate. `WARN` findings require a reviewer note.
 
+In `study` mode, mechanical QA checks the learner-card headings and PDF page-reference sanity. In `full` and `evidence` modes, it also expects the Evidence Appendix and figure/table coverage ledger.
+
 ### 8. Manual Review Gate
 
 Before marking a card ready for sharing, check:
 
 - identity was verified against the PDF;
-- top section is readable without dense evidence details;
-- Evidence Appendix contains meaningful figure/table coverage, not only a number list;
-- formulas required to reconstruct the method are present;
+- study card or top section is readable without dense evidence details;
+- `full` and `evidence` cards contain meaningful Evidence Appendix figure/table coverage, not only a number list;
+- study cards define technical terms before using dense formulas;
+- formulas required to understand the method are present;
 - page references use PDF pages and are within range;
 - interpretation callouts do not mix with author claims;
 - the card does not reproduce long source passages.
