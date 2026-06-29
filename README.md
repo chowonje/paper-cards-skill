@@ -1,10 +1,10 @@
 # paper-cards-skill
 
-Local PDF to Korean paper cards with evidence appendices.
+Evidence-anchored paper card workflow for local PDFs.
 
 Status: `v0.1.0-preview` candidate. The skill is usable, but the included example cards still need human publication review.
 
-`paper-cards-skill` is an agent skill for professors, researchers, and graduate students who want to turn paper PDFs into reusable Korean Markdown notes for seminars, literature reviews, lecture prep, and research briefs.
+`paper-cards-skill` is an agent skill for professors, researchers, and graduate students who want to turn local paper PDFs into reusable Korean Markdown notes for seminars, literature reviews, lecture prep, and research briefs.
 
 It is not a one-shot paper summarizer. The default workflow creates one Markdown card per paper. The top of the card is readable study material, and the lower `Evidence Appendix` keeps source-page references, figures, tables, formulas, uncertainty notes, and QA.
 
@@ -92,6 +92,22 @@ The generated scaffold is not the final card. It is expected to contain `TODO` p
 
 Treat PDFs as untrusted files. The helper uses local Poppler tools with bounded Python subprocess timeouts, but it is not a sandbox. For hostile or unknown PDFs, run the workflow in a constrained environment. The generated agent prompt also tells downstream agents to treat paper text as evidence only, never as executable instructions.
 
+## Preview Cautions
+
+`paper-cards-skill` is a preview workflow, not a publication-grade verifier. Generated cards should be treated as review candidates.
+
+Before sharing or citing a card, a human reviewer should check:
+
+- the title, authors, year, and source against the first PDF page;
+- benchmark numbers, table values, and figure descriptions against rendered PDF pages;
+- whether performance claims are scoped to the paper's experimental setting;
+- whether graph axes and units are copied exactly, for example `sec/epoch` rather than "per second";
+- whether interpretation is clearly separated from the authors' claims;
+- whether formulas render correctly in the target Markdown viewer;
+- whether the card avoids long verbatim excerpts from the source paper.
+
+Mechanical QA can catch missing sections, remaining `TODO`s, page-reference errors, and some formatting problems. It cannot guarantee factual correctness, publication suitability, copyright suitability, or that every table and figure was interpreted correctly.
+
 Advanced users can set their own paths before running the workflow:
 
 ```bash
@@ -109,7 +125,7 @@ uv run skill/scripts/qa_check.py "$PAPER_CARD_OUT_DIR/cards/example.md" --paper 
 
 ## Review Notes
 
-The example cards are included as review samples only. They are summaries and interpretation notes, not substitutes for the source papers. Before publication, a human reviewer should confirm:
+The example cards are included as preview review samples only. They are summaries and interpretation notes, not substitutes for the source papers. Mechanical QA passed for the included examples, but human spot-checks are still required before publication. A reviewer should confirm:
 
 - each example card is acceptable under the source paper terms;
 - formulas, figure/table descriptions, and page references match the source paper;

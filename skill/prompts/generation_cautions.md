@@ -17,6 +17,9 @@ These cautions come from observed paper-card review failures. Apply them while r
 11. Do not make the readable top section carry the full audit burden. Dense table values, visual-reading uncertainty, and page-by-page evidence belong in `# Evidence Appendix`.
 12. Avoid long inline LaTeX inside Korean prose. Use block math or a self-created equation rendering when the top section would otherwise become hard to read.
 13. Figure/table descriptions in the top section should answer "what should I remember?" Detailed axes, baselines, panel-by-panel values, and uncertainty notes belong in `# Evidence Appendix`.
+14. Scope performance claims to the paper's experimental setting. Prefer "in this paper's benchmark setting" over broad claims that sound universal.
+15. Copy graph axes and units exactly. For example, use `sec/epoch` when the figure reports seconds per epoch; do not rewrite it as "per second".
+16. Treat mechanical QA as a gate for structure and obvious consistency, not as proof of factual correctness or publication suitability.
 
 ## Review Ledger Template
 
