@@ -1,6 +1,6 @@
 {
   "name": "paper-cards-skill",
-  "version": "0.1.0-preview.1",
+  "version": "0.1.0-preview.2",
   "description": "Evidence-anchored paper card workflow for local PDFs.",
   "bin": {
     "paper-cards-skill": "bin/paper-cards-skill.js"
@@ -23,7 +23,7 @@
     "examples/cards/*.md"
   ],
   "scripts": {
-    "smoke": "node bin/paper-cards-skill.js --help && npm pack --dry-run"
+    "smoke": "node bin/paper-cards-skill.js --help && node bin/paper-cards-skill.js doctor && npm pack --dry-run"
   },
   "repository": {
     "type": "git",
