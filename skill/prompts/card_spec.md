@@ -1,6 +1,11 @@
-# Korean Paper Section Card Specification
+# Korean Paper Card Specification
 
-Generate an Obsidian-compatible Markdown card in Korean from a local research paper PDF.
+Generate one Obsidian-compatible Markdown card in Korean from a local research paper PDF.
+
+The card has two layers in one file:
+
+- readable top sections for study, seminars, and literature review;
+- `# Evidence Appendix` for page-grounded verification, figures, tables, formulas, uncertainty notes, and QA.
 
 ## Frontmatter
 
@@ -20,51 +25,66 @@ Only put source information in `source` when it is confirmed inside the PDF. Put
 
 ## Required Structure
 
-1. `# 논문 전체 요약`
-   - One paragraph summarizing the whole paper.
-   - End with the physical PDF page reference.
-2. Operational blocks:
-   - `### TL;DR`
-   - `### Why it matters`
-   - `### When to cite`
-   - `### Do not overclaim`
-   - `### Limitations / Failure modes / Not settled by this paper`
-3. One `##` section for each top-level paper section.
-   - Do not promote subsections such as `2.1` to `##` unless the paper itself has unusual top-level numbering.
-   - Keep subsection details inside the parent section card.
-4. Final `## 그림·표 커버리지` ledger.
+1. `# <paper title>`
+2. `## 한 문단 요약`
+3. `## 핵심 아이디어`
+4. `## 수식으로 보는 핵심`
+5. `## 왜 중요한가`
+6. `## 기억할 수치`
+7. `## 그림·표 한눈에 보기`
+8. `## 한계와 조심할 점`
+9. `# Evidence Appendix`
+10. `## 문서 신원`
+11. `## 핵심 주장별 근거`
+12. `## 수식 근거`
+13. `## 그림·표 근거`
+14. `## QA 메모`
 
-## Section Card Body
+## Readable Top Section Rules
 
-Each `##` section must contain:
+- Prefer compact prose and bullets over long section-by-section reports.
+- Keep figure/table notes to the reader-facing point: what the visual shows and why it matters.
+- Do not paste long raw LaTeX inside Korean prose.
+- If a formula is central and visually hard to read inline, use block math or a small self-created equation image.
+- Do not include full PDF pages, original paper figures, or long source excerpts.
 
-- `**핵심 주장**`: up to three bullets.
-- `**근거·데이터 요약**`: experiments, methods, comparisons, and key numbers.
-- Figure/table descriptions when relevant.
-- Required formulas in LaTeX.
-- `**원문 페이지**: pdf p.X-Y` at the end.
+## Evidence Appendix Rules
 
-If printed page numbers differ, write:
+- Use physical PDF page numbers for every claim group.
+- If printed page numbers differ, write both:
 
 `**원문 페이지**: pdf p.2-4 (printed p.1189-1191)`
 
-Do not use printed page numbers alone.
+- Do not use printed page numbers alone.
+- Preserve core formulas in LaTeX.
+- Put interpretation only inside `> [!note] 해석` callouts.
+- Mark OCR, table, or visual-reading uncertainty explicitly.
 
 ## Figure And Table Rules
 
+In the readable top section:
+
+- Mention only important figures/tables.
+- Use one or two short sentences per item.
+- Avoid table-value dumps.
+
+In `# Evidence Appendix`:
+
 - Describe all figures and tables that matter to the paper's argument.
+- Keep a coverage ledger listing source figures/tables, PDF pages, whether they appear in the top section, and evidence status.
 - For graphs, include axis meaning, range, trend, and representative values when readable.
 - For tables, preserve the comparison structure. Rows may be summarized, but do not remove all competing baselines or comparison columns.
 - For multi-panel figures, copy panel labels from the figure itself.
 - For diagrams, describe components and connections in order.
 - If a figure is qualitative, state that no numeric axis is present and summarize the structure.
-- End with a coverage ledger listing source figures/tables and described figures/tables.
 
 ## Formula Rules
 
-- Preserve core formulas in LaTeX.
+- Preserve core formulas in LaTeX in `# Evidence Appendix`.
 - Include hyperparameters needed to understand the method.
 - Do not replace formulas with prose when the equation is central to the paper.
+- In the readable top section, avoid long inline math. Use block math or a self-created equation image when readability is better.
+- Do not copy original paper equation images. If an image is needed, create a fresh rendering from the LaTeX you wrote.
 
 ## Claim And Interpretation Separation
 
@@ -75,7 +95,7 @@ Main prose should state the authors' claims and results. Your interpretation, hi
 > <interpretation; clearly distinguish it from the paper's own claim>
 ```
 
-Use at most one interpretation callout per section. Do not force a callout when none is needed.
+Use interpretation callouts mainly in `# Evidence Appendix`. Do not force a callout when none is needed.
 
 ## Public-Export Constraints
 

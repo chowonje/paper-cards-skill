@@ -149,10 +149,10 @@
     {
       "kind": "phone",
       "file": "skill/prompts/card_spec.md",
-      "line": 49,
+      "line": 56,
       "line_sha256": "53ed27a5ce6b8e2e10117b2b1cb238ecd79d8e1f4f382e92e625b79d1dfeb2fe",
       "classification": "reviewed_research_number_false_positive",
-      "reason": "Reviewed as paper metadata, date, equation, table value, page reference, or benchmark number rather than contact data."
+      "reason": "Reviewed as a documentation example for PDF and printed page ranges rather than contact data."
     }
   ]
 }

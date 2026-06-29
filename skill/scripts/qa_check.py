@@ -21,13 +21,17 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final
+from typing import Final, Literal, assert_never
 
 PAGE_REF_PATTERN: Final = re.compile(r"(?<!printed )(?<!인쇄 )p\.(\d{1,4})")
 FRONTMATTER_PATTERN: Final = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
 SUBSECTION_PATTERN: Final = re.compile(r"^## (\d+\.\d+[ .].*)$", re.MULTILINE)
 FIGURE_PATTERN: Final = re.compile(r"(?:Figure|Fig\.)\s+(\d{1,2})\b")
 TABLE_PATTERN: Final = re.compile(r"Table\s+(\d{1,2})\b")
+TODO_PATTERN: Final = re.compile(r"\bTODO\b")
+INLINE_MATH_PATTERN: Final = re.compile(r"(?<!\\)\$[^$\n]{20,}(?<!\\)\$")
+PDF_TOOL_TIMEOUT_SECONDS: Final = 120
+CardKind = Literal["appendix", "legacy"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,8 +71,14 @@ def contiguous(numbers: set[int]) -> set[int]:
 
 def run_text_command(command: list[str]) -> str | None:
     try:
-        completed = subprocess.run(command, capture_output=True, check=False, text=True)
-    except OSError:
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            check=False,
+            text=True,
+            timeout=PDF_TOOL_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.TimeoutExpired):
         return None
     if completed.returncode != 0:
         return None
@@ -111,6 +121,12 @@ def check_frontmatter(text: str) -> tuple[str, ...]:
     return tuple(failures)
 
 
+def check_todos(text: str) -> tuple[str, ...]:
+    if TODO_PATTERN.search(text) is None:
+        return ()
+    return ("H7 TODO placeholders remain",)
+
+
 def check_sections(text: str) -> tuple[str, ...]:
     failures: list[str] = []
     if "# 논문 전체 요약" not in text:
@@ -129,7 +145,32 @@ def check_sections(text: str) -> tuple[str, ...]:
     return tuple(failures)
 
 
-def check_pdf_backed_rules(text: str, paper_path: Path | None) -> CheckResult:
+def check_appendix_card(text: str) -> CheckResult:
+    hard: list[str] = []
+    warn: list[str] = []
+    for heading in ("## 한 문단 요약", "## 핵심 아이디어", "## 왜 중요한가", "# Evidence Appendix"):
+        if heading not in text:
+            hard.append(f"H2 appendix-card section missing: {heading}")
+    if "원문 페이지" not in text:
+        hard.append("H4 Evidence Appendix missing source page references")
+    if "Figure/Table Coverage Ledger" not in text:
+        hard.append("H6 Evidence Appendix missing figure/table coverage ledger")
+    if INLINE_MATH_PATTERN.search(text) is not None:
+        warn.append("W3 card contains long inline LaTeX; prefer block math or equation image")
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        has_visual_term = re.search(r"(?:Figure|Fig\.|Table|그림|표)", line) is not None
+        if has_visual_term and len(line) > 280:
+            warn.append(f"W4 long figure/table line in card: line {line_number}")
+    return CheckResult(hard=tuple(hard), warn=tuple(warn))
+
+
+def card_kind(text: str) -> CardKind:
+    if "# Evidence Appendix" in text:
+        return "appendix"
+    return "legacy"
+
+
+def check_pdf_backed_rules(text: str, paper_path: Path | None, *, require_inventory: bool) -> CheckResult:
     if paper_path is None:
         return CheckResult(hard=(), warn=("W0 PDF-backed checks skipped; no --paper supplied",))
     if not paper_path.exists():
@@ -147,6 +188,9 @@ def check_pdf_backed_rules(text: str, paper_path: Path | None) -> CheckResult:
             hard.append(f"H5 page reference exceeds PDF page count {page_count}: {over[:5]}")
         elif over:
             warn.append(f"W2 page references exceed PDF count despite printed-page note: {over[:5]}")
+
+    if not require_inventory:
+        return CheckResult(hard=tuple(hard), warn=tuple(warn))
 
     inventory = pdf_fig_table_inventory(paper_path)
     if inventory is None:
@@ -174,10 +218,23 @@ def check_card(card_path: Path, paper_path: Path | None) -> CheckResult:
     text = card_path.read_text(encoding="utf-8")
     hard = [
         *check_frontmatter(text),
-        *check_sections(text),
+        *check_todos(text),
     ]
-    pdf_result = check_pdf_backed_rules(text, paper_path)
-    return CheckResult(hard=tuple(hard + list(pdf_result.hard)), warn=pdf_result.warn)
+    warn: list[str] = []
+    kind = card_kind(text)
+    match kind:
+        case "appendix":
+            appendix_result = check_appendix_card(text)
+            hard.extend(appendix_result.hard)
+            warn.extend(appendix_result.warn)
+        case "legacy":
+            hard.extend(check_sections(text))
+        case unreachable:
+            assert_never(unreachable)
+    pdf_result = check_pdf_backed_rules(text, paper_path, require_inventory=True)
+    hard.extend(pdf_result.hard)
+    warn.extend(pdf_result.warn)
+    return CheckResult(hard=tuple(hard), warn=tuple(warn))
 
 
 def main() -> int:

@@ -20,15 +20,17 @@ import re
 import shutil
 import subprocess
 import sys
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from collections.abc import Mapping
 from typing import Final, Sequence
 
 DEFAULT_OUT_DIR: Final = Path("paper-card-runs")
 DEFAULT_DPI: Final = 110
 DEFAULT_MAX_PAGES: Final = 50
+PDF_TOOL_TIMEOUT_SECONDS: Final = 120
 SKILL_DIR: Final = Path(__file__).resolve().parents[1]
+USAGE: Final = "usage: prepare_paper.py <paper.pdf> [--out DIR] [--dpi N] [--max-pages N] [--slug NAME]"
 SLUG_PATTERN: Final = re.compile(r"[^a-z0-9]+")
 YEAR_PATTERN: Final = re.compile(r"\b(?:19|20)\d{2}\b")
 PAGES_PATTERN: Final = re.compile(r"Pages:\s+(\d+)")
@@ -49,6 +51,8 @@ class PreparedPaths:
     run_dir: Path
     pages_dir: Path
     text_dir: Path
+    cards_dir: Path
+    equations_dir: Path
     card_path: Path
     prompt_path: Path
     manifest_path: Path
@@ -62,9 +66,7 @@ class PaperMetadata:
 
 
 class UsageError(Exception):
-    def __init__(self, message: str) -> None:
-        self.message = message
-        super().__init__(message)
+    pass
 
 
 def parse_positive_int(raw: str, label: str) -> int:
@@ -77,16 +79,18 @@ def parse_positive_int(raw: str, label: str) -> int:
     return value
 
 
-def usage() -> str:
-    return (
-        "usage: prepare_paper.py <paper.pdf> "
-        "[--out DIR] [--dpi N] [--max-pages N] [--slug NAME]"
-    )
+def normalize_user_slug(raw: str) -> str:
+    value = raw.strip()
+    if not value:
+        raise UsageError("--slug must not be empty")
+    if "/" in value or "\\" in value or value in {".", ".."}:
+        raise UsageError("--slug must be a file name, not a path")
+    return slugify(value)
 
 
 def parse_args(argv: list[str]) -> CliArgs:
     if len(argv) < 2:
-        raise UsageError(usage())
+        raise UsageError(USAGE)
 
     pdf_path = Path(argv[1])
     out_dir = DEFAULT_OUT_DIR
@@ -108,18 +112,12 @@ def parse_args(argv: list[str]) -> CliArgs:
             case "--max-pages":
                 max_pages = parse_positive_int(option_arg, "--max-pages")
             case "--slug":
-                slug = option_arg
+                slug = normalize_user_slug(option_arg)
             case unexpected:
                 raise UsageError(f"unknown option: {unexpected}")
         index += 2
 
-    return CliArgs(
-        pdf_path=pdf_path,
-        out_dir=out_dir,
-        dpi=dpi,
-        max_pages=max_pages,
-        slug=slug,
-    )
+    return CliArgs(pdf_path=pdf_path, out_dir=out_dir, dpi=dpi, max_pages=max_pages, slug=slug)
 
 
 def require_tool(name: str) -> str:
@@ -130,7 +128,16 @@ def require_tool(name: str) -> str:
 
 
 def run_command(command: Sequence[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, capture_output=True, check=False, text=True)
+    try:
+        return subprocess.run(
+            command,
+            capture_output=True,
+            check=False,
+            text=True,
+            timeout=PDF_TOOL_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise UsageError(f"command timed out after {PDF_TOOL_TIMEOUT_SECONDS}s: {command[0]}") from error
 
 
 def read_pdf_header(pdf_path: Path) -> None:
@@ -171,12 +178,16 @@ def pdfinfo_metadata(pdf_path: Path, pdfinfo: str, pdftotext: str) -> PaperMetad
 
 
 def make_paths(out_dir: Path, slug: str) -> PreparedPaths:
+    if slug != slugify(slug):
+        raise UsageError(f"unsafe slug: {slug}")
     run_dir = out_dir / slug
     return PreparedPaths(
         run_dir=run_dir,
         pages_dir=run_dir / "pages",
         text_dir=run_dir / "text",
-        card_path=run_dir / f"{slug}.md",
+        cards_dir=run_dir / "cards",
+        equations_dir=run_dir / "assets" / "equations",
+        card_path=run_dir / "cards" / f"{slug}.md",
         prompt_path=run_dir / "agent_prompt.md",
         manifest_path=run_dir / "run_manifest.json",
     )
@@ -221,8 +232,12 @@ def render_template(template_name: str, values: Mapping[str, str]) -> str:
     return text + "\n"
 
 
-def card_scaffold(metadata: PaperMetadata) -> str:
-    return render_template("card_scaffold.md", {"title": metadata.title, "year": str(metadata.year)})
+def scaffold_values(metadata: PaperMetadata, paths: PreparedPaths) -> Mapping[str, str]:
+    return {
+        "title": metadata.title, "year": str(metadata.year),
+        "card_relpath": paths.card_path.relative_to(paths.run_dir).as_posix(),
+        "equations_dir_relpath": paths.equations_dir.relative_to(paths.run_dir).as_posix(),
+    }
 
 
 def agent_prompt(args: CliArgs, paths: PreparedPaths, metadata: PaperMetadata, rendered_pages: int) -> str:
@@ -239,6 +254,7 @@ def agent_prompt(args: CliArgs, paths: PreparedPaths, metadata: PaperMetadata, r
             "pages_dir": str(paths.pages_dir),
             "rendered_pages": str(rendered_pages),
             "card_path": str(paths.card_path),
+            "equations_dir": str(paths.equations_dir),
             "title": metadata.title,
             "year": str(metadata.year),
             "page_count": str(metadata.page_count),
@@ -251,10 +267,11 @@ def write_manifest(args: CliArgs, paths: PreparedPaths, metadata: PaperMetadata,
         "source_pdf_name": args.pdf_path.name,
         "run_dir_name": paths.run_dir.name,
         "files": {
-            "card": paths.card_path.name,
+            "card": paths.card_path.relative_to(paths.run_dir).as_posix(),
             "agent_prompt": paths.prompt_path.name,
             "pages_dir": paths.pages_dir.name,
             "text_dir": paths.text_dir.name,
+            "equations_dir": paths.equations_dir.relative_to(paths.run_dir).as_posix(),
         },
         "title": metadata.title,
         "year": metadata.year,
@@ -277,9 +294,12 @@ def prepare(args: CliArgs) -> PreparedPaths:
     paths = make_paths(args.out_dir, slug)
     paths.pages_dir.mkdir(parents=True, exist_ok=True)
     paths.text_dir.mkdir(parents=True, exist_ok=True)
+    paths.cards_dir.mkdir(parents=True, exist_ok=True)
+    paths.equations_dir.mkdir(parents=True, exist_ok=True)
     rendered_pages = render_pages(args, paths, pdftoppm, metadata.page_count)
     extract_text(args.pdf_path, paths, pdftotext)
-    paths.card_path.write_text(card_scaffold(metadata), encoding="utf-8")
+    values = scaffold_values(metadata, paths)
+    paths.card_path.write_text(render_template("card_scaffold.md", values), encoding="utf-8")
     paths.prompt_path.write_text(agent_prompt(args, paths, metadata, rendered_pages), encoding="utf-8")
     write_manifest(args, paths, metadata, rendered_pages)
     return paths
@@ -290,7 +310,7 @@ def main() -> int:
         args = parse_args(sys.argv)
         paths = prepare(args)
     except UsageError as error:
-        print(error.message, file=sys.stderr)
+        print(str(error), file=sys.stderr)
         return 2
     print(f"prepared: {paths.run_dir}")
     print(f"draft card: {paths.card_path}")
