@@ -73,6 +73,11 @@
       "file": "examples/cards/gpt-4-technical-report-2023.md",
       "source_selection": "requested candidate present",
       "status": "included"
+    },
+    {
+      "file": "examples/cards/gcn-study-2017.md",
+      "source_selection": "study-mode sample generated for public first-screen review",
+      "status": "included"
     }
   ],
   "excluded_files_or_classes": [
@@ -91,7 +96,7 @@
       "name": "export_file_inventory",
       "command": "find . -maxdepth 4 -type f -not -path './.git/*' | sort",
       "result": "PASS",
-      "summary": "npm package files include required skill files, Korean and English full/evidence templates, Korean and English study templates, npm/npx package entrypoint, release hygiene review data, and 10 example cards."
+      "summary": "npm package files include required skill files, Korean and English full/evidence templates, Korean and English study templates, npm/npx package entrypoint, release hygiene review data, and 11 example cards."
     },
     {
       "name": "forbidden_binary_and_queue_classes",
@@ -103,7 +108,7 @@
       "name": "mechanical_card_qa_markdown_only",
       "command": "for each examples/cards/*.md: uv run skill/scripts/qa_check.py <card>",
       "result": "WARN",
-      "summary": "All 10 example cards passed Markdown structural checks. WARN is expected because source PDFs are intentionally absent, so PDF-backed page and figure/table inventory checks were skipped."
+      "summary": "All 11 example cards passed Markdown structural checks. WARN is expected because source PDFs are intentionally absent, so PDF-backed page and figure/table inventory checks were skipped."
     },
     {
       "name": "literal_hygiene_scan",

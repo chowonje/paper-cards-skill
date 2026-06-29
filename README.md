@@ -94,7 +94,7 @@ Many paper tools are optimized for quick understanding, chat, or library managem
 - `skill/templates/card_scaffold_study.md`: Korean learner-facing study card scaffold.
 - `skill/templates/card_scaffold_study_en.md`: English learner-facing study card scaffold.
 - `privacy-reviewed-findings.json`: line-hash allowlist for reviewed privacy false positives.
-- `examples/cards/`: 10 example cards for review.
+- `examples/cards/`: 11 example cards for review, including one study-mode sample.
 - `manifest.json`: preview manifest, checks, exclusions, and residual risks.
 
 ## Requirements
@@ -252,7 +252,7 @@ The example cards are included as preview review samples only. They are summarie
 
 Local hygiene and privacy checks were run for this preview repository. Raw `privacy_preflight.py` status is WARN, not BLOCK. The repo also includes a reviewed-warning pass that turns the current known false positives into PASS only when their line hashes still match.
 
-- The repo includes npm package metadata, a Node CLI, study and full/evidence templates, and 10 example cards.
+- The repo includes npm package metadata, a Node CLI, study and full/evidence templates, and 11 example cards.
 - No PDFs, page images, raw paper images, or queue state files were found.
 - Mechanical Markdown QA passed for all example cards; PDF-backed checks were skipped because PDFs are intentionally not included.
 - Literal hygiene scan found no local absolute path or credential-label matches. It did find benign matches in public package owner strings and research benchmark text; details are summarized in `manifest.json`.
