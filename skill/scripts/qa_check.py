@@ -31,6 +31,19 @@ TABLE_PATTERN: Final = re.compile(r"Table\s+(\d{1,2})\b")
 TODO_PATTERN: Final = re.compile(r"\bTODO\b")
 INLINE_MATH_PATTERN: Final = re.compile(r"(?<!\\)\$[^$\n]{20,}(?<!\\)\$")
 PDF_TOOL_TIMEOUT_SECONDS: Final = 120
+KOREAN_APPENDIX_HEADINGS: Final[tuple[str, ...]] = (
+    "## 한 문단 요약",
+    "## 핵심 아이디어",
+    "## 왜 중요한가",
+    "# Evidence Appendix",
+)
+ENGLISH_APPENDIX_HEADINGS: Final[tuple[str, ...]] = (
+    "## One-Paragraph Summary",
+    "## Key Ideas",
+    "## Why It Matters",
+    "# Evidence Appendix",
+)
+SOURCE_PAGE_MARKERS: Final[tuple[str, ...]] = ("원문 페이지", "Source pages")
 CardKind = Literal["appendix", "legacy"]
 
 
@@ -145,13 +158,21 @@ def check_sections(text: str) -> tuple[str, ...]:
     return tuple(failures)
 
 
+def closest_required_headings(text: str) -> tuple[str, ...]:
+    korean_missing = tuple(heading for heading in KOREAN_APPENDIX_HEADINGS if heading not in text)
+    english_missing = tuple(heading for heading in ENGLISH_APPENDIX_HEADINGS if heading not in text)
+    if len(english_missing) < len(korean_missing):
+        return ENGLISH_APPENDIX_HEADINGS
+    return KOREAN_APPENDIX_HEADINGS
+
+
 def check_appendix_card(text: str) -> CheckResult:
     hard: list[str] = []
     warn: list[str] = []
-    for heading in ("## 한 문단 요약", "## 핵심 아이디어", "## 왜 중요한가", "# Evidence Appendix"):
+    for heading in closest_required_headings(text):
         if heading not in text:
             hard.append(f"H2 appendix-card section missing: {heading}")
-    if "원문 페이지" not in text:
+    if not any(marker in text for marker in SOURCE_PAGE_MARKERS):
         hard.append("H4 Evidence Appendix missing source page references")
     if "Figure/Table Coverage Ledger" not in text:
         hard.append("H6 Evidence Appendix missing figure/table coverage ledger")

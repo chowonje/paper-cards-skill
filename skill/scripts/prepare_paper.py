@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -23,18 +24,23 @@ import sys
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Sequence
+from typing import Final, Literal, Sequence, assert_never
 
 DEFAULT_OUT_DIR: Final = Path("paper-card-runs")
 DEFAULT_DPI: Final = 110
 DEFAULT_MAX_PAGES: Final = 50
+LANGUAGE_ENV_VAR: Final = "PAPER_CARD_LANGUAGE"
 PDF_TOOL_TIMEOUT_SECONDS: Final = 120
 SKILL_DIR: Final = Path(__file__).resolve().parents[1]
-USAGE: Final = "usage: prepare_paper.py <paper.pdf> [--out DIR] [--dpi N] [--max-pages N] [--slug NAME]"
+USAGE: Final = (
+    "usage: prepare_paper.py <paper.pdf> [--out DIR] [--dpi N] "
+    "[--max-pages N] [--slug NAME] [--language ko|en]"
+)
 SLUG_PATTERN: Final = re.compile(r"[^a-z0-9]+")
 YEAR_PATTERN: Final = re.compile(r"\b(?:19|20)\d{2}\b")
 PAGES_PATTERN: Final = re.compile(r"Pages:\s+(\d+)")
 TITLE_PATTERN: Final = re.compile(r"Title:\s+(.+)")
+Language = Literal["ko", "en"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,6 +50,7 @@ class CliArgs:
     dpi: int
     max_pages: int
     slug: str | None
+    language: Language
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,6 +95,23 @@ def normalize_user_slug(raw: str) -> str:
     return slugify(value)
 
 
+def parse_language(raw: str) -> Language:
+    match raw.strip().lower():
+        case "ko" | "korean":
+            return "ko"
+        case "en" | "english":
+            return "en"
+        case unsupported:
+            raise UsageError(f"language must be ko or en: {unsupported}")
+
+
+def default_language() -> Language:
+    raw = os.environ.get(LANGUAGE_ENV_VAR)
+    if raw is None or not raw.strip():
+        return "ko"
+    return parse_language(raw)
+
+
 def parse_args(argv: list[str]) -> CliArgs:
     if len(argv) < 2:
         raise UsageError(USAGE)
@@ -97,6 +121,7 @@ def parse_args(argv: list[str]) -> CliArgs:
     dpi = DEFAULT_DPI
     max_pages = DEFAULT_MAX_PAGES
     slug: str | None = None
+    language: Language = default_language()
     index = 2
 
     while index < len(argv):
@@ -113,11 +138,20 @@ def parse_args(argv: list[str]) -> CliArgs:
                 max_pages = parse_positive_int(option_arg, "--max-pages")
             case "--slug":
                 slug = normalize_user_slug(option_arg)
+            case "--language":
+                language = parse_language(option_arg)
             case unexpected:
                 raise UsageError(f"unknown option: {unexpected}")
         index += 2
 
-    return CliArgs(pdf_path=pdf_path, out_dir=out_dir, dpi=dpi, max_pages=max_pages, slug=slug)
+    return CliArgs(
+        pdf_path=pdf_path,
+        out_dir=out_dir,
+        dpi=dpi,
+        max_pages=max_pages,
+        slug=slug,
+        language=language,
+    )
 
 
 def require_tool(name: str) -> str:
@@ -232,6 +266,55 @@ def render_template(template_name: str, values: Mapping[str, str]) -> str:
     return text + "\n"
 
 
+def scaffold_template_name(language: Language) -> str:
+    match language:
+        case "ko":
+            return "card_scaffold.md"
+        case "en":
+            return "card_scaffold_en.md"
+        case unreachable:
+            assert_never(unreachable)
+
+
+def language_label(language: Language) -> str:
+    match language:
+        case "ko":
+            return "Korean"
+        case "en":
+            return "English"
+        case unreachable:
+            assert_never(unreachable)
+
+
+def language_instruction(language: Language) -> str:
+    match language:
+        case "ko":
+            return (
+                "Write the final card in Korean. Keep the Evidence Appendix headings "
+                "in the Korean contract unless the template says otherwise."
+            )
+        case "en":
+            return (
+                "Write the final card in English. Keep source-page evidence, formulas, "
+                "figure/table ledger, and QA notes in English."
+            )
+        case unreachable:
+            assert_never(unreachable)
+
+
+def interpretation_callout_instruction(language: Language) -> str:
+    match language:
+        case "ko":
+            return "Keep interpretation inside `> [!note] 해석` callouts in `# Evidence Appendix`."
+        case "en":
+            return (
+                "Keep interpretation inside `> [!note] Interpretation` callouts "
+                "in `# Evidence Appendix`."
+            )
+        case unreachable:
+            assert_never(unreachable)
+
+
 def scaffold_values(metadata: PaperMetadata, paths: PreparedPaths) -> Mapping[str, str]:
     return {
         "title": metadata.title, "year": str(metadata.year),
@@ -258,6 +341,10 @@ def agent_prompt(args: CliArgs, paths: PreparedPaths, metadata: PaperMetadata, r
             "title": metadata.title,
             "year": str(metadata.year),
             "page_count": str(metadata.page_count),
+            "language_code": args.language,
+            "language_label": language_label(args.language),
+            "language_instruction": language_instruction(args.language),
+            "interpretation_callout_instruction": interpretation_callout_instruction(args.language),
         },
     )
 
@@ -276,6 +363,7 @@ def write_manifest(args: CliArgs, paths: PreparedPaths, metadata: PaperMetadata,
         "title": metadata.title,
         "year": metadata.year,
         "page_count": metadata.page_count,
+        "output_language": args.language,
         "rendered_pages": rendered_pages,
         "status": "prepared",
         "next_step": "Open agent_prompt.md with an agent that can read the PDF and complete the card.",
@@ -299,7 +387,7 @@ def prepare(args: CliArgs) -> PreparedPaths:
     rendered_pages = render_pages(args, paths, pdftoppm, metadata.page_count)
     extract_text(args.pdf_path, paths, pdftotext)
     values = scaffold_values(metadata, paths)
-    paths.card_path.write_text(render_template("card_scaffold.md", values), encoding="utf-8")
+    paths.card_path.write_text(render_template(scaffold_template_name(args.language), values), encoding="utf-8")
     paths.prompt_path.write_text(agent_prompt(args, paths, metadata, rendered_pages), encoding="utf-8")
     write_manifest(args, paths, metadata, rendered_pages)
     return paths
@@ -316,6 +404,7 @@ def main() -> int:
     print(f"draft card: {paths.card_path}")
     print(f"agent prompt: {paths.prompt_path}")
     print(f"manifest: {paths.manifest_path}")
+    print(f"language: {args.language}")
     return 0
 
 

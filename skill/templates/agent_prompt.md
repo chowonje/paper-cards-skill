@@ -1,4 +1,8 @@
-Use this repository's paper-cards skill to finish a Korean paper card.
+Use this repository's paper-cards skill to finish a paper card in {{language_label}}.
+
+Output language:
+- code: {{language_code}}
+- instruction: {{language_instruction}}
 
 Read these files first:
 - {{skill_path}}
@@ -42,9 +46,9 @@ Required final checks:
 1. Verify document identity from page 1.
 2. Replace all TODOs in the draft card.
 3. Use physical PDF page numbers.
-4. Keep the top card readable: short paragraphs, compact bullets, and no long inline LaTeX inside Korean prose.
+4. Keep the top card readable: short paragraphs, compact bullets, and no long inline LaTeX inside prose.
 5. Put detailed figure/table coverage, table values, formula LaTeX, visual-reading uncertainty, and QA notes in `# Evidence Appendix`.
 6. For formulas that are hard to read inline, use block math in Markdown or create a small SVG under the equation assets directory and link it from the card.
-7. Keep interpretation inside `> [!note] 해석` callouts in `# Evidence Appendix`.
+7. {{interpretation_callout_instruction}}
 8. Run:
    uv run skill/scripts/qa_check.py "{{card_path}}" --paper "{{pdf_path}}"

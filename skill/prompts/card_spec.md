@@ -1,11 +1,20 @@
-# Korean Paper Card Specification
+# Paper Card Specification
 
-Generate one Obsidian-compatible Markdown card in Korean from a local research paper PDF.
+Generate one Obsidian-compatible Markdown card from a local research paper PDF.
 
 The card has two layers in one file:
 
 - readable top sections for study, seminars, and literature review;
 - `# Evidence Appendix` for page-grounded verification, figures, tables, formulas, uncertainty notes, and QA.
+
+## Output Language
+
+The card language is selected during preparation:
+
+- `ko`: Korean reader card and Korean appendix labels.
+- `en`: English reader card and English appendix labels.
+
+Use the selected language consistently. Keep paper titles, author names, venues, formulas, model names, dataset names, and quoted labels in their original language when that is more accurate.
 
 ## Frontmatter
 
@@ -25,6 +34,8 @@ Only put source information in `source` when it is confirmed inside the PDF. Put
 
 ## Required Structure
 
+Korean card:
+
 1. `# <paper title>`
 2. `## 한 문단 요약`
 3. `## 핵심 아이디어`
@@ -40,11 +51,28 @@ Only put source information in `source` when it is confirmed inside the PDF. Put
 13. `## 그림·표 근거`
 14. `## QA 메모`
 
+English card:
+
+1. `# <paper title>`
+2. `## One-Paragraph Summary`
+3. `## Key Ideas`
+4. `## Core Formula`
+5. `## Why It Matters`
+6. `## Memorable Numbers`
+7. `## Figure/Table At a Glance`
+8. `## Limitations And Cautions`
+9. `# Evidence Appendix`
+10. `## Document Identity`
+11. `## Evidence By Claim`
+12. `## Formula Evidence`
+13. `## Figure/Table Evidence`
+14. `## QA Notes`
+
 ## Readable Top Section Rules
 
 - Prefer compact prose and bullets over long section-by-section reports.
 - Keep figure/table notes to the reader-facing point: what the visual shows and why it matters.
-- Do not paste long raw LaTeX inside Korean prose.
+- Do not paste long raw LaTeX inside prose.
 - If a formula is central and visually hard to read inline, use block math or a small self-created equation image.
 - Do not include full PDF pages, original paper figures, or long source excerpts.
 
@@ -53,7 +81,13 @@ Only put source information in `source` when it is confirmed inside the PDF. Put
 - Use physical PDF page numbers for every claim group.
 - If printed page numbers differ, write both:
 
+Korean:
+
 `**원문 페이지**: pdf p.2-4 (printed p.1189-1191)`
+
+English:
+
+`**Source pages**: pdf p.2-4 (printed p.1189-1191)`
 
 - Do not use printed page numbers alone.
 - Preserve core formulas in LaTeX.
@@ -92,6 +126,13 @@ Main prose should state the authors' claims and results. Your interpretation, hi
 
 ```markdown
 > [!note] 해석
+> <interpretation; clearly distinguish it from the paper's own claim>
+```
+
+English cards may use:
+
+```markdown
+> [!note] Interpretation
 > <interpretation; clearly distinguish it from the paper's own claim>
 ```
 

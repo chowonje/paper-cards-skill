@@ -21,6 +21,7 @@
     "skill/scripts/render_paper.sh",
     "skill/templates/agent_prompt.md",
     "skill/templates/card_scaffold.md",
+    "skill/templates/card_scaffold_en.md",
     "examples/cards/*.md"
   ],
   "scripts": {

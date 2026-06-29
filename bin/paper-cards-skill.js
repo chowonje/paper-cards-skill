@@ -30,6 +30,7 @@ function usage() {
     "  npx paper-cards-skill@preview doctor",
     "  npx paper-cards-skill@preview init --target ./paper-cards-skill",
     "  npx paper-cards-skill@preview prepare ./paper.pdf --out paper-card-runs",
+    "  npx paper-cards-skill@preview prepare ./paper.pdf --out paper-card-runs --language en",
   ].join("\n");
 }
 

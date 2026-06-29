@@ -4,7 +4,7 @@ Evidence-anchored paper card workflow for local PDFs.
 
 Status: `v0.1.0-preview` candidate. The skill is usable, but generated cards should be treated as review candidates.
 
-`paper-cards-skill` helps professors, researchers, and graduate students turn local paper PDFs into reusable Korean Markdown notes for seminars, literature reviews, lecture prep, and research briefs.
+`paper-cards-skill` helps professors, researchers, and graduate students turn local paper PDFs into reusable Korean or English Markdown notes for seminars, literature reviews, lecture prep, and research briefs.
 
 It is not a one-shot paper summarizer or a publication-grade verifier. The workflow prepares a PDF reading workspace, gives an agent a concrete prompt, and checks the finished card for mechanical issues. A human reviewer still needs to verify the important claims, table values, figure axes, formulas, and publication suitability.
 
@@ -55,7 +55,7 @@ Many paper tools are optimized for quick understanding, chat, or library managem
 |---|---|---|
 | Main use | Fast overview | Reusable seminar, review, and research notes |
 | Input | Often service, URL, or library dependent | Local PDF first |
-| Output | Summary or chat response | One Korean Markdown card with an Evidence Appendix |
+| Output | Summary or chat response | One Korean or English Markdown card with an Evidence Appendix |
 | Evidence | Citation/link oriented | Physical PDF page references per card |
 | Reading mode | Text extraction first | Rendered pages plus text layer |
 | Figures and tables | Optional or caption-level | Coverage ledger plus axes, trends, and values |
@@ -100,6 +100,12 @@ Run the npm preview explicitly:
 npx paper-cards-skill@preview --help
 npx paper-cards-skill@preview doctor
 npx paper-cards-skill@preview prepare path/to/paper.pdf --out paper-card-runs
+```
+
+Korean is the default output language. For an English card, add `--language en`:
+
+```bash
+npx paper-cards-skill@preview prepare path/to/paper.pdf --out paper-card-runs --language en
 ```
 
 This creates:
@@ -181,7 +187,7 @@ Mechanical QA can catch missing sections, remaining `TODO`s, page-reference erro
 
 Suggested wording when sharing this preview:
 
-> `paper-cards-skill` is a preview workflow for turning local PDFs into Korean paper-card drafts with page-grounded evidence. It helps preserve claims, formulas, and figure/table notes, but generated cards still need human review before sharing or citing.
+> `paper-cards-skill` is a preview workflow for turning local PDFs into Korean or English paper-card drafts with page-grounded evidence. It helps preserve claims, formulas, and figure/table notes, but generated cards still need human review before sharing or citing.
 
 Advanced users can set their own paths before running the workflow:
 
@@ -189,6 +195,7 @@ Advanced users can set their own paths before running the workflow:
 export PAPER_PDF_DIR="/path/to/pdfs"
 export PAPER_CARD_OUT_DIR="/path/to/cards"
 export PAPER_RUN_MANIFEST="/path/to/run_manifest.json"
+export PAPER_CARD_LANGUAGE="ko"
 ```
 
 Then read `skill/SKILL.md`, `skill/prompts/card_spec.md`, and `skill/prompts/generation_cautions.md` before generating a card.

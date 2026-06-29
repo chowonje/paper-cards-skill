@@ -1,16 +1,18 @@
 ---
 name: paper-cards
-description: Generate Korean paper cards from user-supplied local PDFs, with a readable top section, Evidence Appendix, document identity checks, page-grounded evidence, formula preservation, figure/table coverage, separated interpretation callouts, and a QA gate.
+description: Generate Korean or English paper cards from user-supplied local PDFs, with a readable top section, Evidence Appendix, document identity checks, page-grounded evidence, formula preservation, figure/table coverage, separated interpretation callouts, and a QA gate.
 ---
 
 # Paper Cards
 
-This skill converts a local paper PDF into one Korean Markdown card:
+This skill converts a local paper PDF into one Markdown card in the selected output language:
 
 - a readable top section for quick reading, study, seminars, and literature review;
 - an `Evidence Appendix` for page-grounded verification, figures, tables, formulas, uncertainty notes, and QA.
 
 It is designed for reviewable research-note generation, not for canonical citation without human review.
+
+Default output language is Korean. Use English when the caller asks for English cards, international sharing, or English-first review.
 
 ## Inputs
 
@@ -19,6 +21,7 @@ The caller supplies all paths:
 - `PAPER_PDF_DIR`: directory containing source PDFs.
 - `PAPER_CARD_OUT_DIR`: directory where Markdown cards will be written.
 - `PAPER_RUN_MANIFEST`: JSON or Markdown run record for selected papers, generated cards, QA status, and reviewer notes.
+- Optional `PAPER_CARD_LANGUAGE`: `ko` or `en`. Defaults to `ko`.
 - Optional `PAPER_QUEUE_FILE`: a caller-owned queue file if batch processing is needed.
 
 Do not assume any fixed home directory, workspace name, queue location, or output path.
@@ -39,6 +42,12 @@ For a one-command start, run:
 
 ```bash
 uv run skill/scripts/prepare_paper.py "$PAPER_PDF_DIR/<paper>.pdf" --out paper-card-runs
+```
+
+For an English card:
+
+```bash
+uv run skill/scripts/prepare_paper.py "$PAPER_PDF_DIR/<paper>.pdf" --out paper-card-runs --language en
 ```
 
 Optional `--slug` values are file-name stems only. Do not use path separators; the helper rejects path-like slugs.
@@ -97,6 +106,11 @@ If identity does not match, stop without writing a card and record `identity_mis
 ### 6. Write the Card
 
 Follow `prompts/card_spec.md`.
+
+Use the language selected during preparation:
+
+- `ko`: Korean reader card and Korean appendix labels.
+- `en`: English reader card and English appendix labels.
 
 Readable top-section requirements:
 
